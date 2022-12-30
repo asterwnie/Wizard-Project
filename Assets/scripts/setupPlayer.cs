@@ -32,11 +32,11 @@ public class setupPlayer : MonoBehaviour
         //add a hovering effect
         zPos = 0.5f*Mathf.Sin(Time.time*1.5f) - 1.0f;
 
-        //reset the scale of the grid
+/*        //reset the scale of the grid
        GameObject[] grid = GameObject.FindGameObjectsWithTag("grid");
        foreach (GameObject cube in grid) {
               cube.transform.localScale = new Vector3(0.75f, 0.75f, 0.75f);
-       }
+       }*/
 
         //handle keystrokes
         if (Input.GetKeyDown("w"))
@@ -58,7 +58,7 @@ public class setupPlayer : MonoBehaviour
 
         //raycast mouse to battlefield for movement
         
-        RaycastHit hit;
+/*        RaycastHit hit;
         Ray ray = cameraComponent.ScreenPointToRay(Input.mousePosition);
 
         if (Physics.Raycast(ray, out hit)) {
@@ -69,9 +69,9 @@ public class setupPlayer : MonoBehaviour
             }
 
 
-        } 
+        } */
 
-
+        
 
         player.transform.position = new Vector3(xPos, yPos, zPos);
     }
