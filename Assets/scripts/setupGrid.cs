@@ -15,17 +15,17 @@ public class setupGrid : MonoBehaviour
     void Start()
     {
 
-/*        //for each tile of grid, make a cube
+        //for each tile of grid, make a cube
         for (int i = 0; i < xSize; i++) {
             for (int j = 0; j < ySize; j++) {
-                //cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                cube = GameObject.Instantiate(tilePrefab);
+                cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                //cube = GameObject.Instantiate(tilePrefab);
                 cube.tag = "grid";
-                //cube.transform.localScale = new Vector3(0.75f, 0.75f, 0.75f);
+                cube.transform.localScale = new Vector3(0.75f, 0.75f, 0.75f);
                 cube.transform.position = new Vector3(i, j, 0.0f);
             }
         }
-        */
+        
 
     }
 

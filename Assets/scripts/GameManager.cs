@@ -6,7 +6,7 @@ public class GameManager : MonoBehaviour
 {
 
     public GameObject tileHighligher;
-
+    public HelloWorldManager networkManager;
 
     // create a singleton so the Gamemanager can be found without Gamemanager.find
     public static GameManager Instance { get; private set; }
@@ -40,7 +40,6 @@ public class GameManager : MonoBehaviour
             GameObject hitObject = hit.transform.gameObject;    //find which object was hit
             if (hitObject.tag == "grid")
             {
-                Debug.Log("hit");
                 // move the highlighter to the tile hit
                 tileHighligher.SetActive(true);
                 tileHighligher.transform.position = hitObject.GetComponent<WorldTile>().footLoc.transform.position;
@@ -52,4 +51,5 @@ public class GameManager : MonoBehaviour
             tileHighligher.SetActive(false);
         }
     }
+
 }
