@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class setupPlayer : MonoBehaviour
 {
-    
+    public GameObject playerPrefab;
     GameObject player;
     float xPos = 0f;
     float yPos = 0f;
@@ -16,7 +16,8 @@ public class setupPlayer : MonoBehaviour
     void Awake()
     {
         //create player
-        player = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        //player = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        player = GameObject.Instantiate(playerPrefab);
         player.transform.position = new Vector3(xPos, yPos, zPos);
         player.transform.localScale = new Vector3(0.75f, 0.75f, 0.75f);
 
