@@ -6,6 +6,7 @@ public class WorldTile : MonoBehaviour
 {
     static int count = 0;
     public int id;
+    public bool selected = false;
 
     public GameObject footLoc;
 

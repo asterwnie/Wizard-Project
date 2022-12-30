@@ -47,7 +47,7 @@ public class HelloWorldPlayer : NetworkBehaviour
 
     static Vector3 GetRandomPositionOnPlane()
     {
-        return new Vector3(Random.Range(0, 10), Random.Range(0, 10), 0);
+        return new Vector3(Random.Range(0, 10), 0, Random.Range(0, 10));
     }
 
     void Update()
@@ -61,13 +61,13 @@ public class HelloWorldPlayer : NetworkBehaviour
             if (movementInput.magnitude > 0)
             {
                 // submit a movement request
-                MoveRelative(new Vector3(movementInput.x, movementInput.y, 0f));
+                MoveRelative(new Vector3(movementInput.x, 0f, movementInput.y));
             }
         }
        
 
         //add a hovering effect
-        Vector3 hover = new Vector3(0f, 0f, 0.5f * Mathf.Sin(Time.time * 1.5f) - 1.0f);
+        Vector3 hover = new Vector3(0f, 0.5f * Mathf.Sin(Time.time * 1.5f) + 1.0f, 0f);
 
         // sync position with networked position
         //transform.position = Position.Value;
