@@ -8,6 +8,19 @@ public class setupGrid : MonoBehaviour
     public int xSize = 20;       
     public int ySize = 10;
 
+    /*10x10 room tiles, reduced to a boolean array
+        ex.           0 0 0 1  
+                      O 1 1 1
+                      O O O 1
+                      1 1 1 1
+    */
+    bool[] cicleRoom = {false,  false,  false,  true,  true,  true,  true,  false,  false,  false,  false,  false,  true,  true,  true,  true,  true,  true,  false,  false,  false,  true,  true,  true,  true,  true,  true,  true,  true,  false,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  false,  true,  true,  true,  true,  true,  true,  true,  true,  false,  false,  false,  true,  true,  true,  true,  true,  true,  false,  false,  false,  false,  false,  true,  true,  true,  true,  false,  false,  false};
+    bool[] donutRoom = {false,  false,  false,  true,  true,  true,  true,  false,  false,  false,  false,  false,  true,  true,  true,  true,  true,  true,  false,  false,  false,  true,  true,  true,  true,  true,  true,  true,  true,  false,  true,  true,  true,  true,  false,  false,  true,  true,  true,  true,  true,  true,  true,  false,  false,  false,  false,  true,  true,  true,  true,  true,  true,  false,  false,  false,  false,  true,  true,  true,  true,  true,  true,  true,  false,  false,  true,  true,  true,  true,  false,  true,  true,  true,  true,  true,  true,  true,  true,  false,  false,  false,  true,  true,  true,  true,  true,  true,  false,  false,  false,  false,  false,  true,  true,  true,  true,  false,  false,  false};
+    bool[] largeRoom = {false,  true,  true,  true,  true,  true,  true,  true,  true,  false,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  false,  true,  true,  true,  true,  true,  true,  true,  true,  false};
+    bool[] tRoom = {false,  false,  false,  false,  true,  true,  false,  false,  false,  false,  false,  false,  false,  false,  true,  true,  false,  false,  false,  false,  false,  false,  false,  false,  true,  true,  false,  false,  false,  false,  false,  false,  false,  false,  true,  true,  false,  false,  false,  false,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  false,  false,  false,  false,  false,  false,  false,  false,  false,  false,  false,  false,  false,  false,  false,  false,  false,  false,  false,  false,  false,  false,  false,  false,  false,  false,  false,  false,  false,  false,  false,  false,  false,  false,  false,  false,  false,  false,  false,  false};
+
+    
+    
     public GameObject tilePrefab;
     GameObject cube;
 
@@ -18,20 +31,12 @@ public class setupGrid : MonoBehaviour
         //for each tile of grid, make a cube
         for (int i = 0; i < xSize; i++) {
             for (int j = 0; j < ySize; j++) {
-                cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                //cube = GameObject.Instantiate(tilePrefab);
-                cube.tag = "grid";
-                cube.transform.localScale = new Vector3(0.75f, 0.75f, 0.75f);
-                cube.transform.position = new Vector3(i, j, 0.0f);
+                if (donutRoom[i*10 + j] == true) {      //room select
+                    cube = GameObject.Instantiate(tilePrefab);
+                    cube.transform.position = new Vector3(i, 0.0f, j);
+                }
             }
         }
-        
-
+  
     }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-}
+ }
