@@ -30,8 +30,8 @@ public class SpellFireball : Spell
     public SpellFireball()
     {
         name = "Fireball";
-        range = 3;
-        radius = 3f;
+        range = 5;
+        radius = 2f;
     }
 }
 

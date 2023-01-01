@@ -7,6 +7,7 @@ public class WorldTile : MonoBehaviour
     static int count = 0;
     public int id;
     public bool selected = false;
+    public Vector2 gridPosition;
 
     public GameObject footLoc;
 
@@ -16,13 +17,5 @@ public class WorldTile : MonoBehaviour
         // assign an ID to this tile
         this.id = count;
         count++;
-
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 }

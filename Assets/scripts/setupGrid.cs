@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using UnityEngine;
 
 public class setupGrid : MonoBehaviour
@@ -23,10 +24,12 @@ public class setupGrid : MonoBehaviour
     
     public GameObject tilePrefab;
     GameObject cube;
+    public OrderedDictionary gridTiles;
 
     // Start is called before the first frame update
     void Start()
     {
+        gridTiles = new OrderedDictionary();
 
         //for each tile of grid, make a cube
         for (int i = 0; i < xSize; i++) {
@@ -34,6 +37,10 @@ public class setupGrid : MonoBehaviour
                 if (donutRoom[i*10 + j] == true) {      //room select
                     cube = GameObject.Instantiate(tilePrefab);
                     cube.transform.position = new Vector3(i, 0.0f, j);
+
+                    WorldTile tileComponent = cube.GetComponent<WorldTile>();
+                    tileComponent.gridPosition = new Vector2(i, j);
+                    gridTiles.Add(new Vector2(i, j), tileComponent);
                 }
             }
         }

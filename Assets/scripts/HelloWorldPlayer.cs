@@ -5,10 +5,16 @@ public class HelloWorldPlayer : NetworkBehaviour
 {
     public NetworkVariable<Vector3> Position = new NetworkVariable<Vector3>();
 
+    static int maxHealth = 100;
+    int currentHealth;
+    WorldTile currentTile;
+
     public override void OnNetworkSpawn()
     {
         if (IsOwner)
         {
+            GameManager.Instance.localPlayer = this;
+            currentHealth = maxHealth;
             MoveRandom();
         }
     }
@@ -17,12 +23,13 @@ public class HelloWorldPlayer : NetworkBehaviour
     {
         if (NetworkManager.Singleton.IsServer)
         {
-            transform.position = GetRandomPositionOnPlane();
-            Position.Value = GetRandomPositionOnPlane();
+            Vector3 randPos = GetRandomTilePosition();
+            transform.position = randPos;
+            Position.Value = randPos;
         }
         else
         {
-            SubmitPositionRequestServerRpc(GetRandomPositionOnPlane());
+            SubmitPositionRequestServerRpc(GetRandomTilePosition());
         }
     }
 
@@ -39,6 +46,20 @@ public class HelloWorldPlayer : NetworkBehaviour
         }
     }
 
+    public void MoveToTile(WorldTile tile)
+    {
+        if (NetworkManager.Singleton.IsServer)
+        {
+            transform.position = tile.footLoc.transform.position;
+            Position.Value = tile.footLoc.transform.position;
+        }
+        else
+        {
+            SubmitPositionRequestServerRpc(tile.footLoc.transform.position);
+        }
+        currentTile = tile;
+    }
+
     [ServerRpc]
     void SubmitPositionRequestServerRpc(Vector3 pos, ServerRpcParams rpcParams = default)
     {
@@ -50,18 +71,42 @@ public class HelloWorldPlayer : NetworkBehaviour
         return new Vector3(Random.Range(0, 10), 0, Random.Range(0, 10));
     }
 
+    Vector3 GetRandomTilePosition()
+    {
+        Vector3 pos = Vector3.zero;
+        if(GameManager.Instance.grid != null)
+        {
+            // select a random tile from the spawned tiles available
+            int numTotalTiles = GameManager.Instance.grid.gridTiles.Count;
+            int randomTileIndex = Random.Range(0, numTotalTiles);
+
+            WorldTile tile = GameManager.Instance.grid.gridTiles[randomTileIndex] as WorldTile;
+            pos = tile.gameObject.transform.position;
+
+            // set player's current tile position to this one
+            currentTile = tile;
+        }
+
+        return pos;
+    }
+
     void Update()
     {
-
         // move player with WASD
-        if(IsOwner)
+        if(IsOwner && GameManager.Instance.grid != null)
         {
             Vector2 movementInput = GetMovementInputs();
             //check if any real movement happened
             if (movementInput.magnitude > 0)
             {
-                // submit a movement request
-                MoveRelative(new Vector3(movementInput.x, 0f, movementInput.y));
+                // check if there is a valid tile to move on
+                Vector2 nextTilePos = currentTile.gridPosition + movementInput;
+                WorldTile nextTile = GameManager.Instance.grid.gridTiles[nextTilePos] as WorldTile;
+                if(nextTile != null)
+                {
+                    // submit a movement request
+                    MoveToTile(nextTile);
+                }
             }
         }
        

@@ -1,21 +1,34 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using TMPro;
 
 public class GameManager : MonoBehaviour
 {
-
+    [Header("References")]
     public GameObject tileHighligher;
     public GameObject tileSelected;
     public HelloWorldManager networkManager;
-
+    public HelloWorldPlayer localPlayer;
+    public setupGrid grid;
 
     // spellcasting
+    [Header("Spellcasting")]
+    bool isCastingAnimation = false;
     public TMP_Text selectedSpellName;
     public Spell selectedSpell;
     WorldTile selectedTile;
     public Material fireballMaterial; // THIS IS SUPER PLACEHOLDER
+
+    // range indicator
+    float lineThetaScale = 0.01f;
+    float radius;
+    int linePoints;
+    LineRenderer lineRenderer;
+    float lineTheta = 0f;
+    public Material rangeIndicatorMaterial;
+    public float lineWidth = 0.05f;
 
 
     // create a singleton so the Gamemanager can be found without Gamemanager.find
@@ -33,12 +46,47 @@ public class GameManager : MonoBehaviour
     {
         tileHighligher.SetActive(false);
         tileSelected.SetActive(false);
+
+        // for radius indicator
+        lineRenderer = gameObject.AddComponent<LineRenderer>();
+        lineRenderer.material = rangeIndicatorMaterial;
+        lineRenderer.startWidth = lineWidth; //thickness of line
+        lineRenderer.endWidth = lineWidth;
     }
 
     // Update is called once per frame
     void Update()
     {
         MoveTileHighlighter();
+
+        // update spell UI
+        if (selectedSpell != null)
+            selectedSpellName.text = selectedSpell.GetName();
+        else
+            selectedSpellName.text = "None";
+
+        if (selectedSpell != null && !isCastingAnimation)
+            ShowRange();
+        else
+            lineRenderer.enabled = false;
+    }
+
+    public void ShowRange()
+    {
+        // show range indicator of selected spell
+        lineRenderer.enabled = true;
+        lineTheta = 0f;
+        linePoints = (int)((1f / lineThetaScale) + 1f);
+        lineRenderer.positionCount = linePoints;
+        radius = selectedSpell.GetRange();
+        Vector3 playerPos = localPlayer.transform.position;
+        for (int i = 0; i < linePoints; i++)
+        {
+            lineTheta += (2.0f * Mathf.PI * lineThetaScale);
+            float x = radius * Mathf.Cos(lineTheta);
+            float y = radius * Mathf.Sin(lineTheta);
+            lineRenderer.SetPosition(i, new Vector3(x + playerPos.x, 0.25f, y + playerPos.z));
+        }
     }
 
     public void MoveTileHighlighter()
@@ -58,52 +106,73 @@ public class GameManager : MonoBehaviour
                 tileHighligher.SetActive(true);
                 tileHighligher.transform.position = hoveredTile.footLoc.transform.position;
 
-                // if clicked, select this one
-                if(Input.GetMouseButton(0))
+                // if casting a spell & clicked, select this tile
+                if(selectedSpell != null && Input.GetMouseButton(0))
                 {
-                    hoveredTile.selected = true;
-                    selectedTile = hoveredTile;
-                    tileSelected.SetActive(true);
-                    tileSelected.transform.position = hoveredTile.footLoc.transform.position;
+                    // SELECT SPELL TARGET TILE
+
+                    // check if within the spell's radius
+                    if(Vector3.Distance(localPlayer.transform.position, hoveredTile.transform.position) <= selectedSpell.GetRange())
+                    {
+                        // select the tile & move selection indicator
+                        hoveredTile.selected = true;
+                        selectedTile = hoveredTile;
+                        tileSelected.SetActive(true);
+                        tileSelected.transform.position = hoveredTile.footLoc.transform.position;
+                    }
+                   
                 }
 
             }
             else if (hitObject.layer != 5) // 5 is the UI layer
             {
                 // when clicking outside of the tilezone, deselect any tile that may be selected
-                if (Input.GetMouseButtonDown(0))
-                {
-                    if (selectedTile)
-                        selectedTile.selected = false;
-                    selectedTile = null;
-                    tileSelected.SetActive(false);
-                }
+                if (Input.GetMouseButton(0))
+                    DeselectSpell();
             }
         }
         else
         {
             // disable the highlighter if nothing was hit
             tileHighligher.SetActive(false);
+
+            // when clicking outside of the tilezone, deselect any tile that may be selected
+            if (Input.GetMouseButton(0))
+            {
+                if (EventSystem.current.IsPointerOverGameObject()) return; // prevent UI clickthrough
+                DeselectSpell();
+            }
+                
         }
+    }
+
+    public void DeselectSpell() // called when a click occurs outside the tilezone
+    {
+        // deselect tile
+        if (selectedTile)
+            selectedTile.selected = false;
+        selectedTile = null;
+        tileSelected.SetActive(false);
+
+        // deselect spell
+        selectedSpell = null;
     }
 
     //spells .... can probably be cleaned up later
     public void SelectSpellBurst()
     {
         selectedSpell = new SpellBurst();
-        selectedSpellName.text = selectedSpell.GetName();
     }
 
     public void SelectFireball()
     {
         selectedSpell = new SpellFireball();
-        selectedSpellName.text = selectedSpell.GetName();
+        
     }
 
     public void ClearSpellSelection()
     {
         selectedSpell = null;
-        selectedSpellName.text = "None";
     }
 
     public void ConfirmSpell()
@@ -119,27 +188,52 @@ public class GameManager : MonoBehaviour
     IEnumerator ExecuteSpell()
     {
         Debug.Log("Executing spell: " + selectedSpell.GetName());
+        isCastingAnimation = true;
+        float projectileSpeed = 1f;
+        float projectileHeight = 1f;
 
         // placeholder.....this should be a prefab instead!
+
+        // create the projectile
         GameObject projectile = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        projectile.transform.position = selectedTile.footLoc.transform.position;
-        projectile.transform.localScale = new Vector3(selectedSpell.GetRadius(), selectedSpell.GetRadius(), selectedSpell.GetRadius());
+        projectile.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+        projectile.transform.position = localPlayer.transform.position;
         projectile.GetComponent<Renderer>().material = fireballMaterial;
+
+        // move the projectile from the player to the impact zone
+        float deltaTime = 0f;
+        float duration = projectileSpeed;
+        while (deltaTime < duration)
+        {
+            deltaTime += Time.deltaTime;
+            Vector3 xzMovement = Vector3.Lerp(localPlayer.transform.position, selectedTile.footLoc.transform.position, deltaTime / duration);
+            float yMovement = Mathf.Sin((deltaTime / duration) * Mathf.PI) * projectileHeight;
+            projectile.transform.position = new Vector3(xzMovement.x, xzMovement.y + yMovement, xzMovement.z);
+            yield return null;
+        }
+        GameObject.Destroy(projectile); // remove the projectile
+
+        // create the impact spell effect
+        GameObject spellEffect = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        spellEffect.transform.position = selectedTile.footLoc.transform.position;
+        spellEffect.transform.localScale = new Vector3(selectedSpell.GetRadius() * 2f, selectedSpell.GetRadius() * 2f, selectedSpell.GetRadius() * 2f);
+        spellEffect.GetComponent<Renderer>().material = fireballMaterial;
 
         // clear the selection after it is done
         selectedTile = null;
         selectedSpell = null;
+        tileSelected.SetActive(false);
+        isCastingAnimation = false;
 
-
-        // delete prefab after a time
-        float deltaTime = 0f;
-        float duration = 2f;
+        // delete the spell impact after a time
+        deltaTime = 0f;
+        duration = 2f;
         while(deltaTime < duration)
         {
             deltaTime += Time.deltaTime;
             yield return null;
         }
-        GameObject.Destroy(projectile);
+        GameObject.Destroy(spellEffect);
 
         // release coroutine
         yield return null;
