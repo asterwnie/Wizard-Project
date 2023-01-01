@@ -1225,6 +1225,7 @@ MonoBehaviour:
   grid: {fileID: 1104636510}
   selectedSpellName: {fileID: 700728479}
   fireballMaterial: {fileID: 2100000, guid: 50415394e49d5f84c81a98d806913a21, type: 2}
+  projectilePrefab: {fileID: 7515922139310069198, guid: 02474c37358e20748a6ffb65a8c3d644, type: 3}
   rangeIndicatorMaterial: {fileID: 2100000, guid: af830f55af73a6643b452602a3bfcfc6, type: 2}
   lineWidth: 0.05
 --- !u!114 &1104636510

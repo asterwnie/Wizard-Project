@@ -44,13 +44,13 @@ public class HelloWorldManager : MonoBehaviour
             if (NetworkManager.Singleton.IsServer && !NetworkManager.Singleton.IsClient )
             {
                 foreach (ulong uid in NetworkManager.Singleton.ConnectedClientsIds)
-                    NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(uid).GetComponent<HelloWorldPlayer>().MoveRandom();
+                    NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(uid).GetComponent<HelloWorldPlayer>().MoveRandomTile();
             }
             else
             {
                 var playerObject = NetworkManager.Singleton.SpawnManager.GetLocalPlayerObject();
                 var player = playerObject.GetComponent<HelloWorldPlayer>();
-                player.MoveRandom();
+                player.MoveRandomTile();
             }
         }
     }

@@ -15,11 +15,11 @@ public class HelloWorldPlayer : NetworkBehaviour
         {
             GameManager.Instance.localPlayer = this;
             currentHealth = maxHealth;
-            MoveRandom();
+            MoveRandomTile();
         }
     }
 
-    public void MoveRandom()
+    public void MoveRandomTile()
     {
         if (NetworkManager.Singleton.IsServer)
         {

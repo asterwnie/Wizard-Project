@@ -5,7 +5,7 @@ using UnityEngine;
 public abstract class Spell
 {
     protected string name;
-    protected int range;
+    protected float range;
     protected float radius;
     public Spell() { }
 
@@ -19,7 +19,7 @@ public abstract class Spell
         return radius;
     }
 
-    public int GetRange()
+    public float GetRange()
     {
         return range;
     }
@@ -30,7 +30,7 @@ public class SpellFireball : Spell
     public SpellFireball()
     {
         name = "Fireball";
-        range = 5;
+        range = 4.5f;
         radius = 2f;
     }
 }
@@ -40,7 +40,7 @@ public class SpellBurst : Spell
     public SpellBurst()
     {
         name = "Magic Burst";
-        range = 5;
+        range = 7.5f;
         radius = .5f;
     }
 }

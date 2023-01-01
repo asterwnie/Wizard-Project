@@ -15,12 +15,13 @@ public class GameManager : MonoBehaviour
 
     // spellcasting
     [Header("Spellcasting")]
-    bool isCastingAnimation = false;
     public TMP_Text selectedSpellName;
     public Spell selectedSpell;
-    WorldTile selectedTile;
     public Material fireballMaterial; // THIS IS SUPER PLACEHOLDER
-
+    public GameObject projectilePrefab;
+    bool isCastingAnimation = false;
+    WorldTile selectedTile;
+    
     // range indicator
     float lineThetaScale = 0.01f;
     float radius;
@@ -189,16 +190,16 @@ public class GameManager : MonoBehaviour
     {
         Debug.Log("Executing spell: " + selectedSpell.GetName());
         isCastingAnimation = true;
-        float projectileSpeed = 1f;
+        float projectileSpeed = .5f;
         float projectileHeight = 1f;
+        float spellDuration = 2f;
 
         // placeholder.....this should be a prefab instead!
 
         // create the projectile
-        GameObject projectile = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        projectile.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+        GameObject projectile = GameObject.Instantiate(projectilePrefab);
         projectile.transform.position = localPlayer.transform.position;
-        projectile.GetComponent<Renderer>().material = fireballMaterial;
+        projectile.transform.LookAt(selectedTile.footLoc.transform.position);
 
         // move the projectile from the player to the impact zone
         float deltaTime = 0f;
@@ -211,12 +212,12 @@ public class GameManager : MonoBehaviour
             projectile.transform.position = new Vector3(xzMovement.x, xzMovement.y + yMovement, xzMovement.z);
             yield return null;
         }
-        GameObject.Destroy(projectile); // remove the projectile
 
         // create the impact spell effect
         GameObject spellEffect = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         spellEffect.transform.position = selectedTile.footLoc.transform.position;
-        spellEffect.transform.localScale = new Vector3(selectedSpell.GetRadius() * 2f, selectedSpell.GetRadius() * 2f, selectedSpell.GetRadius() * 2f);
+        spellEffect.transform.localScale = Vector3.zero;
+        Vector3 targetScale = new Vector3(selectedSpell.GetRadius() * 2f, selectedSpell.GetRadius() * 2f, selectedSpell.GetRadius() * 2f);
         spellEffect.GetComponent<Renderer>().material = fireballMaterial;
 
         // clear the selection after it is done
@@ -225,14 +226,38 @@ public class GameManager : MonoBehaviour
         tileSelected.SetActive(false);
         isCastingAnimation = false;
 
-        // delete the spell impact after a time
+        // grow after impact to correct size
         deltaTime = 0f;
-        duration = 2f;
+        duration = 0.5f;
+        while (deltaTime < duration)
+        {
+            deltaTime += Time.deltaTime;
+            spellEffect.transform.localScale = Vector3.Lerp(spellEffect.transform.localScale, targetScale, deltaTime / duration);
+            yield return null;
+        }
+
+        // wait for spell impact to linger
+        deltaTime = 0f;
+        duration = spellDuration;
         while(deltaTime < duration)
         {
             deltaTime += Time.deltaTime;
+            if(deltaTime >= .1f)
+                GameObject.Destroy(projectile); // remove the projectile
+
             yield return null;
         }
+
+        // shrink the impact zone to 0
+        deltaTime = 0f;
+        duration = 0.5f;
+        while (deltaTime < duration)
+        {
+            deltaTime += Time.deltaTime;
+            spellEffect.transform.localScale = Vector3.Lerp(spellEffect.transform.localScale, Vector3.zero, deltaTime / duration);
+            yield return null;
+        }
+
         GameObject.Destroy(spellEffect);
 
         // release coroutine
