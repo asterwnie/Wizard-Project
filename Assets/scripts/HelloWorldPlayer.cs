@@ -5,6 +5,8 @@ public class HelloWorldPlayer : NetworkBehaviour
 {
     public NetworkVariable<Vector3> Position = new NetworkVariable<Vector3>();
 
+    public int intendedMove = 0;
+
     static int maxHealth = 100;
     int currentHealth;
     WorldTile currentTile;

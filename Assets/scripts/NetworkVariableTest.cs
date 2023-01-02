@@ -4,27 +4,34 @@ using UnityEngine;
 public class NetworkVariableTest : NetworkBehaviour
 {
     private NetworkVariable<float> masterClock = new NetworkVariable<float>();
-    private float last_t = 0.0f;
 
     public override void OnNetworkSpawn()
     {
-        if (IsServer)
-        {
-            masterClock.Value = 0.0f;
-            Debug.Log("Server's uptime var initialized to: " + masterClock.Value);
-        }
+        
     }
 
     void Update()
     {
-        var t_now = Time.time;
         if (IsServer)
         {
-            masterClock.Value = Time.time;
-            Debug.Log("I decree the time is: " + masterClock.Value);
+            //server fully dictates the clock
+            masterClock.Value += Time.deltaTime;
+
         }
+
         if (IsClient) {
-            Debug.Log("Server says that the value is: " + masterClock.Value);
+
+            if (Input.GetKeyDown(KeyCode.P)) {
+                PingServerRpc(Time.frameCount); // Client -> Server
+            }
         }
     }
+
+    [ServerRpc]
+    void PingServerRpc(int somenumber, ServerRpcParams serverRpcParams = default) {
+
+        var clientId = serverRpcParams.Receive.SenderClientId;
+        Debug.Log("Client ID: " + clientId + ", frameCount: " + somenumber);
+    }
+    
 }
