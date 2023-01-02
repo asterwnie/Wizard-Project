@@ -50,14 +50,14 @@ public class PlayerData : NetworkBehaviour
             detectAction();
             
             //then the client submits action data to server on each second
-            float fraction = Mathf.Repeat(masterClock.Value, 1.0f);
-            if (fraction > 0.94f && submittedAction == false) {
-                Debug.Log("sent the server a message at: " + Time.time);
-                PingServerRpc(Time.frameCount, actionType, target);     //send all action data client -> server
+            float fraction = Mathf.Repeat(masterClock.Value, 3.0f);
+            if (fraction > 2.94f && submittedAction == false) {
+                //Debug.Log("sent the server a message at: " + Time.time);
+                PingServerRpc(actionType, target);     //send all action data client -> server
                 submittedAction = true;
                 actionType = 0;
             } else
-            if (fraction < 0.8f && submittedAction == true) {
+            if (fraction < 1.8f && submittedAction == true) {
                 submittedAction = false;
             }
         }
@@ -67,11 +67,18 @@ public class PlayerData : NetworkBehaviour
         transform.position = new Vector3(transform.position.x, transform.position.y + breathe, transform.position.z);
     }
 
-    [ServerRpc]
-    void PingServerRpc(int somenumber, int actionType, Vector3 target, ServerRpcParams serverRpcParams = default) {
+    [ServerRpc(RequireOwnership=false)]
+    void PingServerRpc(int actionType, Vector3 target, ServerRpcParams serverRpcParams = default) {
 
         var clientId = serverRpcParams.Receive.SenderClientId;
-        Debug.Log("Client ID: " + clientId + ", frameCount: " + somenumber + ", actionType: " + actionType + ", target: " + target);
+        Debug.Log("Client ID: " + clientId + ", actionType: " + actionType + ", target: " + target);
+        BroadcastClientRpc(clientId, actionType, target);       
+    }
+
+    [ClientRpc]
+    void BroadcastClientRpc(ulong clientId, int actionType, Vector3 target) {
+
+        Debug.Log("Client ID: " + clientId + ", actionType: " + actionType + ", target: " + target);
     }
     
 
