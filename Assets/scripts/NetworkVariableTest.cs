@@ -5,6 +5,11 @@ public class NetworkVariableTest : NetworkBehaviour
 {
     private NetworkVariable<float> masterClock = new NetworkVariable<float>();
 
+    //action data
+    public int actionType = 0;      //action type, 0 = idle, 1 = move, 2 = fireball, 3 = magic burst
+    public Vector3 target;
+    bool submittedAction = false;
+
     public override void OnNetworkSpawn()
     {
         
@@ -20,18 +25,25 @@ public class NetworkVariableTest : NetworkBehaviour
         }
 
         if (IsClient) {
-
-            if (Input.GetKeyDown(KeyCode.P)) {
-                PingServerRpc(Time.frameCount); // Client -> Server
+            
+            //client submits action data to server each second
+            float mantissa = Mathf.Repeat(masterClock.Value, 1.0f);
+            if (mantissa > 0.94f && submittedAction == false) {
+                Debug.Log("sent the server a message at: " + Time.time);
+                PingServerRpc(Time.frameCount, actionType, target);
+                submittedAction = true;
+            } else
+            if (mantissa < 0.8f && submittedAction == true) {
+                submittedAction = false;
             }
         }
     }
 
     [ServerRpc]
-    void PingServerRpc(int somenumber, ServerRpcParams serverRpcParams = default) {
+    void PingServerRpc(int somenumber, int actionType, Vector3 target, ServerRpcParams serverRpcParams = default) {
 
         var clientId = serverRpcParams.Receive.SenderClientId;
-        Debug.Log("Client ID: " + clientId + ", frameCount: " + somenumber);
+        Debug.Log("Client ID: " + clientId + ", frameCount: " + somenumber + ", actionType: " + actionType + ", target: " + target);
     }
     
 }
