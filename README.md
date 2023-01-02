@@ -1,3 +1,3 @@
 # Wizard-Project
 
-hi i wanted to try this
+![Wizard project screenshot](https://i.gyazo.com/cfc228253367412caebe6f8633381db3.png)
