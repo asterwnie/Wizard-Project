@@ -78,16 +78,14 @@ public class GameManager : NetworkBehaviour
         {
             //server solely dictates the clock
             masterClock.Value += Time.deltaTime;
+
+            if (masterClock.Value - roundStartTime >= roundDuration)
+            {
+                roundStartTime = masterClock.Value;
+                SpellHandler.Instance.ResolveTurn();
+            }
         }
 
-        if(masterClock.Value - roundStartTime >= roundDuration)
-        {
-            roundStartTime = masterClock.Value;
-            SpellHandler.Instance.ResolveTurn();
-        }
-
-
-       // MoveTileHighlighter();
 
         // update spell UI
         if (selectedSpell != null)
@@ -118,63 +116,6 @@ public class GameManager : NetworkBehaviour
             lineRenderer.SetPosition(i, new Vector3(x + playerPos.x, 0.25f, y + playerPos.z));
         }
     }
-
-    /*public void MoveTileHighlighter()
-    {
-        RaycastHit hit;
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        //Debug.DrawRay(ray.origin, ray.direction * 10f, Color.red);
-
-        if (Physics.Raycast(ray, out hit))
-        {
-            GameObject hitObject = hit.transform.gameObject;    //find which object was hit
-            if (hitObject.tag == "grid")
-            {
-                WorldTile hoveredTile = hitObject.GetComponent<WorldTile>();
-
-                // move the highlighter to the tile hit
-                tileHighligher.SetActive(true);
-                tileHighligher.transform.position = hoveredTile.footLoc.transform.position;
-
-                // if casting a spell & clicked, select this tile
-                if(selectedSpell != null && Input.GetMouseButton(0))
-                {
-                    // SELECT SPELL TARGET TILE
-
-                    // check if within the spell's radius
-                    if(Vector3.Distance(localPlayer.transform.position, hoveredTile.transform.position) <= selectedSpell.GetRange())
-                    {
-                        // select the tile & move selection indicator
-                        hoveredTile.selected = true;
-                        selectedTile = hoveredTile;
-                        tileSelected.SetActive(true);
-                        tileSelected.transform.position = hoveredTile.footLoc.transform.position;
-                    }
-                   
-                }
-
-            }
-            else if (hitObject.layer != 5) // 5 is the UI layer
-            {
-                // when clicking outside of the tilezone, deselect any tile that may be selected
-                if (Input.GetMouseButton(0))
-                    DeselectSpell();
-            }
-        }
-        else
-        {
-            // disable the highlighter if nothing was hit
-            tileHighligher.SetActive(false);
-
-            // when clicking outside of the tilezone, deselect any tile that may be selected
-            if (Input.GetMouseButton(0))
-            {
-                if (EventSystem.current.IsPointerOverGameObject()) return; // prevent UI clickthrough
-                DeselectSpell();
-            }
-                
-        }
-    }*/
 
     public void DeselectSpell() // called when a click occurs outside the tilezone
     {
@@ -213,4 +154,10 @@ public class GameManager : NetworkBehaviour
             StartCoroutine(selectedSpell.ExecuteSpell(localPlayer, selectedTile.footLoc.transform.position));
         }
     }*/
+
+    public void ExecuteSpell(Vector3 origin, Action action)
+    {
+        Spell fireball = new SpellFireball(); // placeholder
+        StartCoroutine(fireball.ExecuteSpell(origin, action.targetPosition));
+    }
 }

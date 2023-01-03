@@ -20,7 +20,7 @@ public class SpellHandler : NetworkBehaviour
     {
         if (IsServer)
         {
-            Debug.Log("resolving moves");
+            Debug.Log("Server: Resolving moves.");
 
             foreach (Action action in actionsQueue)   //resolve each action individually
             {
@@ -33,7 +33,9 @@ public class SpellHandler : NetworkBehaviour
                 if (action.type == "fireball")
                 {
                     // spawns a fireball that *should* be networked in theory
-                    BroadcastSpellClientRpc(actingPlayer.transform.position, action);
+                    Debug.Log("Server: Broadcasting spell to clients.");
+                    GameManager.Instance.ExecuteSpell(actingPlayer.transform.position, action); // spawn on server
+                    BroadcastSpellClientRpc(actingPlayer.transform.position, action); // broadcast to clients
                 }
 
                 if (action.type == "move" && actingPlayer != null)
@@ -54,8 +56,10 @@ public class SpellHandler : NetworkBehaviour
     [ClientRpc]
     void BroadcastSpellClientRpc(Vector3 origin, Action action)
     {
-        Debug.Log("cast spell");
-        Spell fireball = new SpellFireball(); // placeholder
-        StartCoroutine(fireball.ExecuteSpell(origin, action.targetPosition));
+        if (IsClient)
+        {
+            Debug.Log("Client: Received spell broadcast. Executing spell.");
+            GameManager.Instance.ExecuteSpell(origin, action); // executes it for the client
+        }  
     }
 }

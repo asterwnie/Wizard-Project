@@ -69,12 +69,6 @@ public class PlayerData : NetworkBehaviour
             if (fraction < 1.8f && submittedAction == true) {
                 submittedAction = false;
             }
-
-            //if the client has heard what everyone wants to do, execute the turn
-            /*if (allActions.Count == numPlayers)
-            {
-                SpellHandler.Instance.ResolveTurn();
-            }*/
         }
 
         //hover
@@ -90,20 +84,18 @@ public class PlayerData : NetworkBehaviour
     void PingServerRpc(string actionType, Vector3 target, ServerRpcParams serverRpcParams = default) {
 
         ulong clientId = serverRpcParams.Receive.SenderClientId;
-
         Action action = new Action(actionType, clientId, target);
 
         Debug.Log(action.printInfo());
-        BroadcastClientRpc(clientId, action);       //after receiving the message from a client, broadcast: server -> all clients
+        SpellHandler.Instance.actionsQueue.Add(action);
+        //BroadcastClientRpc(clientId, action);       //after receiving the message from a client, broadcast: server -> all clients
     }
-
+/*
     [ClientRpc]
-    void BroadcastClientRpc(ulong clientId, Action action) {
-
-        //Debug.Log(action.printInfo());
-        //allActions.Add(action);     
-        SpellHandler.Instance.actionsQueue.Add(action);//add incoming action to the list
-    }
+    void BroadcastClientRpc(ulong clientId, Action action) 
+    {
+        //SpellHandler.Instance.actionsQueue.Add(action); //add incoming action to the list
+    }*/
 
     [ServerRpc]
      void SubmitPositionRequestServerRpc(Vector3 pos, ServerRpcParams rpcParams = default)
