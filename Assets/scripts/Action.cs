@@ -27,6 +27,6 @@ public class Action : INetworkSerializable  //to have a custom class sent over R
 
     public string printInfo()
     {
-        return "type: " + type + " target: " + targetPosition + " myPosition: " + myPosition;
+        return "type: " + type + " target: " + targetPosition + " source: " + myPosition;
     }
 }

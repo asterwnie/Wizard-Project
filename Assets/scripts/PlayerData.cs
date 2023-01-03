@@ -6,7 +6,10 @@ public class PlayerData : NetworkBehaviour
 {
     
     public NetworkVariable<Vector3> Position = new NetworkVariable<Vector3>();
-    
+    public NetworkVariable<int> numClients = new NetworkVariable<int>();
+
+    bool hasMoved = false;
+
     //network action data
     string actionType = "idle";
     bool submittedAction = false;
@@ -75,15 +78,19 @@ public class PlayerData : NetworkBehaviour
         }
 
         //hover
-        float breathe = Mathf.Sin(2*Time.time) * 0.2f;
-        transform.position = Position.Value + new Vector3(0.0f, breathe, 0.0f);
+        //float breathe = Mathf.Sin(2*Time.time) * 0.2f;
+        //transform.position = Position.Value + new Vector3(0.0f, breathe, 0.0f);
+        if (hasMoved == false)
+        {
+            transform.position = Position.Value;
+        }
     }
 
     [ServerRpc(RequireOwnership=false)]
     void PingServerRpc(Action action, ServerRpcParams serverRpcParams = default) {
 
         var clientId = serverRpcParams.Receive.SenderClientId;
-        //Debug.Log(action.printInfo());
+        Debug.Log(action.printInfo());
         BroadcastClientRpc(clientId, action);       //after receiving the message from a client, broadcast: server -> all clients
     }
 
@@ -91,7 +98,7 @@ public class PlayerData : NetworkBehaviour
     void BroadcastClientRpc(ulong clientId, Action action) {
 
         //Debug.Log(action.printInfo());
-        allActions.Add(action);
+        allActions.Add(action);     //add incoming action to the list
     }
 
     [ServerRpc]
@@ -130,10 +137,32 @@ public class PlayerData : NetworkBehaviour
     
     void resolveTurn()
     {
-        Debug.Log("I have heard everyone's move, listed above is what people want to do ^^^^");
-        foreach (Action action in allActions)
+        Debug.Log("resolving moves");
+
+        foreach (Action action in allActions)   //resolve each action individually
         {
+
             Debug.Log(action.printInfo());
+            
+            GameObject actingPlayer = null;
+            
+            //find out which player sent this action message
+            GameObject[] allPlayers = GameObject.FindGameObjectsWithTag("Player");
+            foreach (GameObject player in allPlayers)     
+            {
+                if (player.transform.position == action.myPosition)
+                {
+                    actingPlayer = player;
+                }
+            }
+
+            if (action.type == "move" && actingPlayer != null)
+            {
+                Debug.Log("player at " + actingPlayer.transform.position + " wants to move");
+                actingPlayer.transform.position = action.targetPosition;
+                hasMoved = true;
+            }
+
         }
         
         //after resolving everything, clear the action list
