@@ -17,10 +17,10 @@ public class HelloWorldPlayer : NetworkBehaviour
         {
             GameManager.Instance.localPlayer = this;
             currentHealth = maxHealth;
-            MoveRandomTile();
+           // MoveRandomTile();
         }
     }
-
+/*
     public void MoveRandomTile()
     {
         if (NetworkManager.Singleton.IsServer)
@@ -33,7 +33,7 @@ public class HelloWorldPlayer : NetworkBehaviour
         {
             SubmitPositionRequestServerRpc(GetRandomTilePosition());
         }
-    }
+    }*/
 
     public void MoveRelative(Vector3 relativeMove)
     {
@@ -73,28 +73,9 @@ public class HelloWorldPlayer : NetworkBehaviour
         return new Vector3(Random.Range(0, 10), 0, Random.Range(0, 10));
     }
 
-    Vector3 GetRandomTilePosition()
-    {
-        Vector3 pos = Vector3.zero;
-        if(GameManager.Instance.grid != null)
-        {
-            // select a random tile from the spawned tiles available
-            int numTotalTiles = GameManager.Instance.grid.gridTiles.Count;
-            int randomTileIndex = Random.Range(0, numTotalTiles);
-
-            WorldTile tile = GameManager.Instance.grid.gridTiles[randomTileIndex] as WorldTile;
-            pos = tile.gameObject.transform.position;
-
-            // set player's current tile position to this one
-            currentTile = tile;
-        }
-
-        return pos;
-    }
-
     void Update()
     {
-        // move player with WASD
+        /*// move player with WASD
         if(IsOwner && GameManager.Instance.grid != null)
         {
             Vector2 movementInput = GetMovementInputs();
@@ -110,7 +91,7 @@ public class HelloWorldPlayer : NetworkBehaviour
                     MoveToTile(nextTile);
                 }
             }
-        }
+        }*/
        
 
         //add a hovering effect

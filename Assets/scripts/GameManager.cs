@@ -11,7 +11,7 @@ public class GameManager : MonoBehaviour
     public GameObject tileSelected;
     public HelloWorldManager networkManager;
     public HelloWorldPlayer localPlayer;
-    public setupGrid grid;
+   // public setupGrid grid;
 
     // spellcasting
     [Header("Spellcasting")]
