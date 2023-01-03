@@ -57,7 +57,7 @@ public class PlayerData : NetworkBehaviour
             DetectKeys();
             
             //then the client submits action data to server at an interval
-            float fraction = Mathf.Repeat(GameManager.Instance.GetServerClock().Value, 3.0f);
+            float fraction = Mathf.Repeat(GameManager.Instance.GetServerClock().Value, 3.0f); // last float is the round length
             if (fraction > 2.94f && submittedAction == false) {
                 PingServerRpc(action = new Action(actionType, transform.position, pointer.transform.position));     //send action data from the client -> server
                 submittedAction = true;
