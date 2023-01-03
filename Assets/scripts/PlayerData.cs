@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -8,11 +9,10 @@ public class PlayerData : NetworkBehaviour
     
     //network action data
     string actionType = "idle";
-    Vector3 target;          // coordinates of the screen pointer
     bool submittedAction = false;
     public Action action;
-    GameObject[] allPlayers;
     int numPlayers;
+    public List<Action> allActions = new List<Action>();   //we will dump every action we hear into this list
 
     //screen pointer
     Camera camera;
@@ -45,11 +45,9 @@ public class PlayerData : NetworkBehaviour
 
     void Update()
     {
-        
+
         //calculate the number of players in the game
-        allPlayers = GameObject.FindGameObjectsWithTag("Player");
-        numPlayers = allPlayers.Length;
-        //Debug.Log(numPlayers);
+        numPlayers = GameObject.FindGameObjectsWithTag("Player").Length;
 
         MovePointer();
         
@@ -68,6 +66,12 @@ public class PlayerData : NetworkBehaviour
             if (fraction < 1.8f && submittedAction == true) {
                 submittedAction = false;
             }
+
+            //if the client has heard what everyone wants to do, execute the turn
+            if (allActions.Count == numPlayers)
+            {
+                resolveTurn();
+            }
         }
 
         //hover
@@ -79,13 +83,15 @@ public class PlayerData : NetworkBehaviour
     void PingServerRpc(Action action, ServerRpcParams serverRpcParams = default) {
 
         var clientId = serverRpcParams.Receive.SenderClientId;
-        Debug.Log("Client ID: " + clientId + ", actionType: " + action.type + ", target: " + action.targetPosition + ", myPosition: " + action.myPosition);
+        //Debug.Log(action.printInfo());
         BroadcastClientRpc(clientId, action);       //after receiving the message from a client, broadcast: server -> all clients
     }
 
     [ClientRpc]
-    void BroadcastClientRpc(ulong clientId, Action action) { 
-        Debug.Log("Client ID: " + clientId + ", actionType: " + action.type + ", target: " + action.targetPosition + ", myPosition: " + action.myPosition);
+    void BroadcastClientRpc(ulong clientId, Action action) {
+
+        //Debug.Log(action.printInfo());
+        allActions.Add(action);
     }
 
     [ServerRpc]
@@ -120,5 +126,17 @@ public class PlayerData : NetworkBehaviour
         {
             pointer.SetActive(false);
         }
+    }
+    
+    void resolveTurn()
+    {
+        Debug.Log("I have heard everyone's move, listed above is what people want to do ^^^^");
+        foreach (Action action in allActions)
+        {
+            Debug.Log(action.printInfo());
+        }
+        
+        //after resolving everything, clear the action list
+        allActions.Clear();
     }
 }
