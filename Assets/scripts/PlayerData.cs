@@ -3,11 +3,9 @@ using UnityEngine;
 
 public class PlayerData : NetworkBehaviour
 {
-    private NetworkVariable<float> masterClock = new NetworkVariable<float>();
+    
     public NetworkVariable<Vector3> Position = new NetworkVariable<Vector3>();
-    public NetworkVariable<int> numClients = new NetworkVariable<int>();
-
-
+    
     //network action data
     string actionType = "idle";
     Vector3 target;          // coordinates of the screen pointer
@@ -19,24 +17,29 @@ public class PlayerData : NetworkBehaviour
     //screen pointer
     Camera camera;
     public GameObject pointer;
+    public LayerMask playLayer;
 
     //player
     public GameObject playerPrefab;
     public GameObject player;
 
+    static int maxHealth = 100;
+    int currentHealth;
+
     void Start() {
         //grab camera and instantiate screen pointer sphere
         camera = GameObject.Find("Main Camera").GetComponent<Camera>();
-        pointer = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        pointer.transform.localScale = new Vector3(0.4f, 0.4f, 0.4f);
-        Destroy(pointer.GetComponent<SphereCollider>());
+        pointer = GameManager.Instance.pointerSelected;
     }
 
     public override void OnNetworkSpawn()
     {
         if (IsOwner)
         {
-            SubmitPositionRequestServerRpc(new Vector3(Random.Range(0.0f, 10.0f), 1.0f, Random.Range(0.0f, 10.0f)));
+            // move player to random location
+            SubmitPositionRequestServerRpc(new Vector3(Random.Range(0f, 9f), 1f, Random.Range(0f, 9f)));
+            GameManager.Instance.localPlayer = this;
+            currentHealth = maxHealth;
         }
     }
 
@@ -48,28 +51,15 @@ public class PlayerData : NetworkBehaviour
         numPlayers = allPlayers.Length;
         //Debug.Log(numPlayers);
 
-        //move pointer sphere to mouse location
-        if (Input.GetMouseButtonDown(0)) {
-            RaycastHit hit;
-            Ray ray = camera.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out hit)) {
-                pointer.transform.position = hit.point;
-            }
-        }
-
-        if (IsServer)
-        {
-            //server solely dictates the clock
-            masterClock.Value += Time.deltaTime;
-        }
-
+        MovePointer();
+        
         if (IsClient) {
 
             //the client figures out what action
             DetectKeys();
             
             //then the client submits action data to server at an interval
-            float fraction = Mathf.Repeat(masterClock.Value, 3.0f);
+            float fraction = Mathf.Repeat(GameManager.Instance.GetServerClock().Value, 3.0f);
             if (fraction > 2.94f && submittedAction == false) {
                 PingServerRpc(action = new Action(actionType, transform.position, pointer.transform.position));     //send action data from the client -> server
                 submittedAction = true;
@@ -81,9 +71,7 @@ public class PlayerData : NetworkBehaviour
         }
 
         //hover
-        float breathe = 0.0007f*Mathf.Sin(2*Time.time);
-        //transform.position = new Vector3(transform.position.x, transform.position.y + breathe, transform.position.z);
-
+        float breathe = Mathf.Sin(2*Time.time) * 0.2f;
         transform.position = Position.Value + new Vector3(0.0f, breathe, 0.0f);
     }
 
@@ -97,17 +85,14 @@ public class PlayerData : NetworkBehaviour
 
     [ClientRpc]
     void BroadcastClientRpc(ulong clientId, Action action) { 
-
         Debug.Log("Client ID: " + clientId + ", actionType: " + action.type + ", target: " + action.targetPosition + ", myPosition: " + action.myPosition);
-
-
     }
 
     [ServerRpc]
      void SubmitPositionRequestServerRpc(Vector3 pos, ServerRpcParams rpcParams = default)
-    {
+     {
         Position.Value = pos;
-    }
+     }
 
     void DetectKeys() {
         if (Input.GetKeyDown("a")) {
@@ -115,6 +100,25 @@ public class PlayerData : NetworkBehaviour
         } else
         if (Input.GetKeyDown("s")) {
             actionType = "fireball";
+        }
+    }
+
+    void MovePointer()
+    {
+        //move pointer sphere to mouse location
+        if (Input.GetMouseButtonDown(0))
+        {
+            RaycastHit hit;
+            Ray ray = camera.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray, out hit, playLayer))
+            {
+                pointer.SetActive(true);
+                pointer.transform.position = hit.point + new Vector3(0f, 0.25f, 0f);
+            }
+        }
+        else if (Input.GetMouseButtonDown(1))
+        {
+            pointer.SetActive(false);
         }
     }
 }

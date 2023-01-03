@@ -2,15 +2,20 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using Unity.Netcode;
 using TMPro;
 
-public class GameManager : MonoBehaviour
+public class GameManager : NetworkBehaviour
 {
+    [Header("Networking")]
+    private NetworkVariable<float> masterClock = new NetworkVariable<float>();
+    public NetworkVariable<int> numClients = new NetworkVariable<int>();
+
     [Header("References")]
-    public GameObject tileHighligher;
-    public GameObject tileSelected;
+    public GameObject pointerHighligher;
+    public GameObject pointerSelected;
     public HelloWorldManager networkManager;
-    public HelloWorldPlayer localPlayer;
+    public PlayerData localPlayer;
    // public setupGrid grid;
 
     // spellcasting
@@ -42,11 +47,16 @@ public class GameManager : MonoBehaviour
             Instance = this;
     }
 
+    public NetworkVariable<float> GetServerClock()
+    {
+        return masterClock;
+    }
+
     // Start is called before the first frame update
     void Start()
     {
-        tileHighligher.SetActive(false);
-        tileSelected.SetActive(false);
+      //  tileHighligher.SetActive(false);
+      //  tileSelected.SetActive(false);
 
         // for radius indicator
         lineRenderer = gameObject.AddComponent<LineRenderer>();
@@ -58,7 +68,14 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        MoveTileHighlighter();
+        if (IsServer)
+        {
+            //server solely dictates the clock
+            masterClock.Value += Time.deltaTime;
+        }
+
+
+       // MoveTileHighlighter();
 
         // update spell UI
         if (selectedSpell != null)
@@ -90,7 +107,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void MoveTileHighlighter()
+    /*public void MoveTileHighlighter()
     {
         RaycastHit hit;
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -145,7 +162,7 @@ public class GameManager : MonoBehaviour
             }
                 
         }
-    }
+    }*/
 
     public void DeselectSpell() // called when a click occurs outside the tilezone
     {
@@ -153,7 +170,7 @@ public class GameManager : MonoBehaviour
         if (selectedTile)
             selectedTile.selected = false;
         selectedTile = null;
-        tileSelected.SetActive(false);
+        //tileSelected.SetActive(false);
 
         // deselect spell
         selectedSpell = null;
@@ -181,86 +198,7 @@ public class GameManager : MonoBehaviour
         // check if there is a selected spell and a selected tile
         if(selectedSpell != null && selectedTile != null)
         {
-            StartCoroutine(ExecuteSpell());
+            StartCoroutine(selectedSpell.ExecuteSpell(localPlayer, selectedTile.footLoc.transform.position));
         }
-    }
-
-    // this is done in a coroutine to ensure everything gets done in the right order
-    IEnumerator ExecuteSpell()
-    {
-        Debug.Log("Executing spell: " + selectedSpell.GetName());
-        isCastingAnimation = true;
-        float projectileSpeed = .5f;
-        float projectileHeight = 1f;
-        float spellDuration = 2f;
-
-        // placeholder.....this should be a prefab instead!
-
-        // create the projectile
-        GameObject projectile = GameObject.Instantiate(projectilePrefab);
-        projectile.transform.position = localPlayer.transform.position;
-        projectile.transform.LookAt(selectedTile.footLoc.transform.position);
-
-        // move the projectile from the player to the impact zone
-        float deltaTime = 0f;
-        float duration = projectileSpeed;
-        while (deltaTime < duration)
-        {
-            deltaTime += Time.deltaTime;
-            Vector3 xzMovement = Vector3.Lerp(localPlayer.transform.position, selectedTile.footLoc.transform.position, deltaTime / duration);
-            float yMovement = Mathf.Sin((deltaTime / duration) * Mathf.PI) * projectileHeight;
-            projectile.transform.position = new Vector3(xzMovement.x, xzMovement.y + yMovement, xzMovement.z);
-            yield return null;
-        }
-
-        // create the impact spell effect
-        GameObject spellEffect = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        spellEffect.transform.position = selectedTile.footLoc.transform.position;
-        spellEffect.transform.localScale = Vector3.zero;
-        Vector3 targetScale = new Vector3(selectedSpell.GetRadius() * 2f, selectedSpell.GetRadius() * 2f, selectedSpell.GetRadius() * 2f);
-        spellEffect.GetComponent<Renderer>().material = fireballMaterial;
-
-        // clear the selection after it is done
-        selectedTile = null;
-        selectedSpell = null;
-        tileSelected.SetActive(false);
-        isCastingAnimation = false;
-
-        // grow after impact to correct size
-        deltaTime = 0f;
-        duration = 0.5f;
-        while (deltaTime < duration)
-        {
-            deltaTime += Time.deltaTime;
-            spellEffect.transform.localScale = Vector3.Lerp(spellEffect.transform.localScale, targetScale, deltaTime / duration);
-            yield return null;
-        }
-
-        // wait for spell impact to linger
-        deltaTime = 0f;
-        duration = spellDuration;
-        while(deltaTime < duration)
-        {
-            deltaTime += Time.deltaTime;
-            if(deltaTime >= .1f)
-                GameObject.Destroy(projectile); // remove the projectile
-
-            yield return null;
-        }
-
-        // shrink the impact zone to 0
-        deltaTime = 0f;
-        duration = 0.5f;
-        while (deltaTime < duration)
-        {
-            deltaTime += Time.deltaTime;
-            spellEffect.transform.localScale = Vector3.Lerp(spellEffect.transform.localScale, Vector3.zero, deltaTime / duration);
-            yield return null;
-        }
-
-        GameObject.Destroy(spellEffect);
-
-        // release coroutine
-        yield return null;
     }
 }

@@ -15,7 +15,7 @@ public class HelloWorldPlayer : NetworkBehaviour
     {
         if (IsOwner)
         {
-            GameManager.Instance.localPlayer = this;
+            //GameManager.Instance.localPlayer = this;
             currentHealth = maxHealth;
            // MoveRandomTile();
         }
