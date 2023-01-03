@@ -9,9 +9,10 @@ public class PlayerData : NetworkBehaviour
 
 
     //network action data
-    int actionType = 0;      //action type, 0 = idle, 1 = move, 2 = fireball, 3 = magic burst
+    string actionType = "idle";
     Vector3 target;          // coordinates of the screen pointer
     bool submittedAction = false;
+    public Action action;
     GameObject[] allPlayers;
     int numPlayers;
 
@@ -41,6 +42,7 @@ public class PlayerData : NetworkBehaviour
 
     void Update()
     {
+        
         //calculate the number of players in the game
         allPlayers = GameObject.FindGameObjectsWithTag("Player");
         numPlayers = allPlayers.Length;
@@ -64,14 +66,14 @@ public class PlayerData : NetworkBehaviour
         if (IsClient) {
 
             //the client figures out what action
-            DetectAction();
+            DetectKeys();
             
             //then the client submits action data to server at an interval
             float fraction = Mathf.Repeat(masterClock.Value, 3.0f);
             if (fraction > 2.94f && submittedAction == false) {
-                PingServerRpc(actionType, target, transform.position);     //send all action data from the client -> server
+                PingServerRpc(action = new Action(actionType, transform.position, pointer.transform.position));     //send action data from the client -> server
                 submittedAction = true;
-                actionType = 0;
+                actionType = "idle";
             } else
             if (fraction < 1.8f && submittedAction == true) {
                 submittedAction = false;
@@ -86,17 +88,17 @@ public class PlayerData : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership=false)]
-    void PingServerRpc(int actionType, Vector3 target, Vector3 myPosition, ServerRpcParams serverRpcParams = default) {
+    void PingServerRpc(Action action, ServerRpcParams serverRpcParams = default) {
 
         var clientId = serverRpcParams.Receive.SenderClientId;
-        Debug.Log("Client ID: " + clientId + ", actionType: " + actionType + ", target: " + target + ", myPosition: " + myPosition);
-        BroadcastClientRpc(clientId, actionType, target, myPosition);       //after receiving the message from a client, broadcast: server -> all clients
+        Debug.Log("Client ID: " + clientId + ", actionType: " + action.type + ", target: " + action.targetPosition + ", myPosition: " + action.myPosition);
+        BroadcastClientRpc(clientId, action);       //after receiving the message from a client, broadcast: server -> all clients
     }
 
     [ClientRpc]
-    void BroadcastClientRpc(ulong clientId, int actionType, Vector3 target, Vector3 myPosition) { 
+    void BroadcastClientRpc(ulong clientId, Action action) { 
 
-        Debug.Log("Client ID: " + clientId + ", actionType: " + actionType + ", target: " + target + ", myPosition: " + myPosition);
+        Debug.Log("Client ID: " + clientId + ", actionType: " + action.type + ", target: " + action.targetPosition + ", myPosition: " + action.myPosition);
 
 
     }
@@ -105,16 +107,14 @@ public class PlayerData : NetworkBehaviour
      void SubmitPositionRequestServerRpc(Vector3 pos, ServerRpcParams rpcParams = default)
     {
         Position.Value = pos;
-        Debug.Log(pos);
     }
 
-    void DetectAction() {
+    void DetectKeys() {
         if (Input.GetKeyDown("a")) {
-            actionType = 1;
+            actionType = "move";
         } else
         if (Input.GetKeyDown("s")) {
-            actionType = 2;
+            actionType = "fireball";
         }
-        target = pointer.transform.position;
     }
 }
