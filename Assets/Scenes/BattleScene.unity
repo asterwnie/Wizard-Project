@@ -1504,7 +1504,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &733343501
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2454,6 +2454,11 @@ MonoBehaviour:
       SourcePrefabToOverride: {fileID: 0}
       SourceHashToOverride: 0
       OverridingTargetPrefab: {fileID: 0}
+    - Override: 0
+      Prefab: {fileID: 7515922139310069198, guid: 02474c37358e20748a6ffb65a8c3d644, type: 3}
+      SourcePrefabToOverride: {fileID: 0}
+      SourceHashToOverride: 0
+      OverridingTargetPrefab: {fileID: 0}
     TickRate: 30
     ClientConnectionBufferTimeout: 10
     ConnectionApproval: 0
@@ -2668,6 +2673,7 @@ MonoBehaviour:
   projectilePrefab: {fileID: 7515922139310069198, guid: 02474c37358e20748a6ffb65a8c3d644, type: 3}
   rangeIndicatorMaterial: {fileID: 2100000, guid: af830f55af73a6643b452602a3bfcfc6, type: 2}
   lineWidth: 0.05
+  roundStartTime: 0
 --- !u!114 &1104636511
 MonoBehaviour:
   m_ObjectHideFlags: 0

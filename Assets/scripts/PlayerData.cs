@@ -15,7 +15,7 @@ public class PlayerData : NetworkBehaviour
     bool submittedAction = false;
     public Action action;
     int numPlayers;
-    public List<Action> allActions = new List<Action>();   //we will dump every action we hear into this list
+    //public List<Action> allActions = new List<Action>();   //we will dump every action we hear into this list
 
     //screen pointer
     Camera camera;
@@ -62,7 +62,7 @@ public class PlayerData : NetworkBehaviour
             //then the client submits action data to server at an interval
             float fraction = Mathf.Repeat(GameManager.Instance.GetServerClock().Value, 3.0f); // last float is the round length
             if (fraction > 2.94f && submittedAction == false) {
-                PingServerRpc(action = new Action(actionType, transform.position, pointer.transform.position));     //send action data from the client -> server
+                PingServerRpc(actionType, pointer.transform.position);     //send action data from the client -> server
                 submittedAction = true;
                 actionType = "idle";
             } else
@@ -71,14 +71,14 @@ public class PlayerData : NetworkBehaviour
             }
 
             //if the client has heard what everyone wants to do, execute the turn
-            if (allActions.Count == numPlayers)
+            /*if (allActions.Count == numPlayers)
             {
-                resolveTurn();
-            }
+                SpellHandler.Instance.ResolveTurn();
+            }*/
         }
 
         //hover
-        //float breathe = Mathf.Sin(2*Time.time) * 0.2f;
+        float breathe = Mathf.Sin(2*Time.time) * 0.2f;
         //transform.position = Position.Value + new Vector3(0.0f, breathe, 0.0f);
         if (hasMoved == false)
         {
@@ -87,9 +87,12 @@ public class PlayerData : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership=false)]
-    void PingServerRpc(Action action, ServerRpcParams serverRpcParams = default) {
+    void PingServerRpc(string actionType, Vector3 target, ServerRpcParams serverRpcParams = default) {
 
-        var clientId = serverRpcParams.Receive.SenderClientId;
+        ulong clientId = serverRpcParams.Receive.SenderClientId;
+
+        Action action = new Action(actionType, clientId, target);
+
         Debug.Log(action.printInfo());
         BroadcastClientRpc(clientId, action);       //after receiving the message from a client, broadcast: server -> all clients
     }
@@ -98,7 +101,8 @@ public class PlayerData : NetworkBehaviour
     void BroadcastClientRpc(ulong clientId, Action action) {
 
         //Debug.Log(action.printInfo());
-        allActions.Add(action);     //add incoming action to the list
+        //allActions.Add(action);     
+        SpellHandler.Instance.actionsQueue.Add(action);//add incoming action to the list
     }
 
     [ServerRpc]
@@ -135,37 +139,5 @@ public class PlayerData : NetworkBehaviour
         }
     }
     
-    void resolveTurn()
-    {
-        Debug.Log("resolving moves");
-
-        foreach (Action action in allActions)   //resolve each action individually
-        {
-
-            Debug.Log(action.printInfo());
-            
-            GameObject actingPlayer = null;
-            
-            //find out which player sent this action message
-            GameObject[] allPlayers = GameObject.FindGameObjectsWithTag("Player");
-            foreach (GameObject player in allPlayers)     
-            {
-                if (player.transform.position == action.myPosition)
-                {
-                    actingPlayer = player;
-                }
-            }
-
-            if (action.type == "move" && actingPlayer != null)
-            {
-                Debug.Log("player at " + actingPlayer.transform.position + " wants to move");
-                actingPlayer.transform.position = action.targetPosition;
-                hasMoved = true;
-            }
-
-        }
-        
-        //after resolving everything, clear the action list
-        allActions.Clear();
-    }
+    
 }

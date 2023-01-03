@@ -36,6 +36,10 @@ public class GameManager : NetworkBehaviour
     public Material rangeIndicatorMaterial;
     public float lineWidth = 0.05f;
 
+    // turns
+    public float roundStartTime = 0f;
+    float roundDuration = 6f;
+
 
     // create a singleton so the Gamemanager can be found without Gamemanager.find
     public static GameManager Instance { get; private set; }
@@ -63,6 +67,8 @@ public class GameManager : NetworkBehaviour
         lineRenderer.material = rangeIndicatorMaterial;
         lineRenderer.startWidth = lineWidth; //thickness of line
         lineRenderer.endWidth = lineWidth;
+
+        roundStartTime = masterClock.Value; // start the clock...this should probably not happen RIGHT at start ******
     }
 
     // Update is called once per frame
@@ -72,6 +78,12 @@ public class GameManager : NetworkBehaviour
         {
             //server solely dictates the clock
             masterClock.Value += Time.deltaTime;
+        }
+
+        if(masterClock.Value - roundStartTime >= roundDuration)
+        {
+            roundStartTime = masterClock.Value;
+            SpellHandler.Instance.ResolveTurn();
         }
 
 
@@ -193,12 +205,12 @@ public class GameManager : NetworkBehaviour
         selectedSpell = null;
     }
 
-    public void ConfirmSpell()
+    /*public void ConfirmSpell()
     {
         // check if there is a selected spell and a selected tile
         if(selectedSpell != null && selectedTile != null)
         {
             StartCoroutine(selectedSpell.ExecuteSpell(localPlayer, selectedTile.footLoc.transform.position));
         }
-    }
+    }*/
 }

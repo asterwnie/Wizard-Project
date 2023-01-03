@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Netcode;
 
 public abstract class Spell
 {
@@ -25,7 +26,7 @@ public abstract class Spell
     }
 
     // this is done in a coroutine to ensure everything gets done in the right order
-    public IEnumerator ExecuteSpell(PlayerData player, Vector3 targetPos)
+    public IEnumerator ExecuteSpell(Vector3 origin, Vector3 targetPos)
     {
         Debug.Log("Executing spell: " + this.GetName());
         //isCastingAnimation = true;
@@ -37,7 +38,9 @@ public abstract class Spell
 
         // create the projectile
         GameObject projectile = GameObject.Instantiate(GameManager.Instance.projectilePrefab);
-        projectile.transform.position = player.transform.position;
+        //projectile.GetComponent<NetworkObject>().Spawn();
+        //projectile.transform.position = player.transform.position;
+        projectile.transform.position = origin;
         projectile.transform.LookAt(targetPos);
 
         // move the projectile from the player to the impact zone
@@ -46,7 +49,7 @@ public abstract class Spell
         while (deltaTime < duration)
         {
             deltaTime += Time.deltaTime;
-            Vector3 xzMovement = Vector3.Lerp(player.transform.position, targetPos, deltaTime / duration);
+            Vector3 xzMovement = Vector3.Lerp(origin, targetPos, deltaTime / duration);
             float yMovement = Mathf.Sin((deltaTime / duration) * Mathf.PI) * projectileHeight;
             projectile.transform.position = new Vector3(xzMovement.x, xzMovement.y + yMovement, xzMovement.z);
             yield return null;
