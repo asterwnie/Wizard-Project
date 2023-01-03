@@ -24,4 +24,9 @@ public class Action : INetworkSerializable  //to have a custom class sent over R
         serializer.SerializeValue(ref myPosition);
         serializer.SerializeValue(ref targetPosition);
     }
+
+    public string printInfo()
+    {
+        return "type: " + type + " target: " + targetPosition + " myPosition: " + myPosition;
+    }
 }
