@@ -4,6 +4,7 @@ using UnityEngine;
 public class PlayerData : NetworkBehaviour
 {
     private NetworkVariable<float> masterClock = new NetworkVariable<float>();
+    public NetworkVariable<Vector3> Position = new NetworkVariable<Vector3>();
 
     //network action data
     public int actionType = 0;      //action type, 0 = idle, 1 = move, 2 = fireball, 3 = magic burst
@@ -28,10 +29,10 @@ public class PlayerData : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
-        //create player
-        player = GameObject.Instantiate(playerPrefab);
-        player.transform.position = new Vector3(0f, 1f, 0f);
-
+        if (IsOwner)
+        {
+            SubmitPositionRequestServerRpc(new Vector3(Random.Range(0.0f, 10.0f), 1.0f, Random.Range(0.0f, 10.0f)));
+        }
     }
 
     void Update()
@@ -59,7 +60,7 @@ public class PlayerData : NetworkBehaviour
             //then the client submits action data to server on each second
             float fraction = Mathf.Repeat(masterClock.Value, 3.0f);
             if (fraction > 2.94f && submittedAction == false) {
-                PingServerRpc(actionType, target);     //send all action data from the client -> server
+                PingServerRpc(actionType, target, transform.position);     //send all action data from the client -> server
                 submittedAction = true;
                 actionType = 0;
             } else
@@ -70,24 +71,33 @@ public class PlayerData : NetworkBehaviour
 
         //hover
         float breathe = 0.0007f*Mathf.Sin(2*Time.time);
-        transform.position = new Vector3(transform.position.x, transform.position.y + breathe, transform.position.z);
+        //transform.position = new Vector3(transform.position.x, transform.position.y + breathe, transform.position.z);
+
+        transform.position = Position.Value + new Vector3(0.0f, breathe, 0.0f);
     }
 
     [ServerRpc(RequireOwnership=false)]
-    void PingServerRpc(int actionType, Vector3 target, ServerRpcParams serverRpcParams = default) {
+    void PingServerRpc(int actionType, Vector3 target, Vector3 myPosition, ServerRpcParams serverRpcParams = default) {
 
         var clientId = serverRpcParams.Receive.SenderClientId;
-        Debug.Log("Client ID: " + clientId + ", actionType: " + actionType + ", target: " + target);
-        BroadcastClientRpc(clientId, actionType, target);       //after receiving the message from a client, broadcast: server -> all clients
+        Debug.Log("Client ID: " + clientId + ", actionType: " + actionType + ", target: " + target + ", myPosition: " + myPosition);
+        BroadcastClientRpc(clientId, actionType, target, myPosition);       //after receiving the message from a client, broadcast: server -> all clients
     }
 
     [ClientRpc]
-    void BroadcastClientRpc(ulong clientId, int actionType, Vector3 target) { 
+    void BroadcastClientRpc(ulong clientId, int actionType, Vector3 target, Vector3 myPosition) { 
 
-        Debug.Log("Client ID: " + clientId + ", actionType: " + actionType + ", target: " + target);
+        Debug.Log("Client ID: " + clientId + ", actionType: " + actionType + ", target: " + target + ", myPosition: " + myPosition);
+
 
     }
-    
+
+    [ServerRpc]
+     void SubmitPositionRequestServerRpc(Vector3 pos, ServerRpcParams rpcParams = default)
+    {
+        Position.Value = pos;
+        Debug.Log(pos);
+    }
 
     void detectAction() {
         if (Input.GetKeyDown("a")) {

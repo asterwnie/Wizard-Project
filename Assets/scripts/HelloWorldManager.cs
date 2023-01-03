@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class HelloWorldManager : MonoBehaviour
 {
+    public GameObject playerPrefab;
     void OnGUI()
     {
         GUILayout.BeginArea(new Rect(10, 10, 300, 300));
@@ -18,10 +19,13 @@ public class HelloWorldManager : MonoBehaviour
         GUILayout.EndArea();
     }
 
-    static void StartButtons()
+    void StartButtons()
     {
         if (GUILayout.Button("Host")) NetworkManager.Singleton.StartHost();
-        if (GUILayout.Button("Client")) NetworkManager.Singleton.StartClient();
+        if (GUILayout.Button("Client")) {
+            NetworkManager.Singleton.StartClient();
+            //GameObject player = GameObject.Instantiate(playerPrefab);
+        }
         if (GUILayout.Button("Server")) NetworkManager.Singleton.StartServer();
     }
 
