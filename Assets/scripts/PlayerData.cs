@@ -7,12 +7,16 @@ public class PlayerData : NetworkBehaviour
 
     //network action data
     public int actionType = 0;      //action type, 0 = idle, 1 = move, 2 = fireball, 3 = magic burst
-    public Vector3 target;
+    public Vector3 target;          // coordinates of the screen pointer
     bool submittedAction = false;
 
     //screen pointer
-    public Camera camera;
+    Camera camera;
     public GameObject pointer;
+
+    //player
+    public GameObject playerPrefab;
+    public GameObject player;
 
     void Start() {
         //grab camera and instantiate screen pointer sphere
@@ -24,6 +28,9 @@ public class PlayerData : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
+        //create player
+        player = GameObject.Instantiate(playerPrefab);
+        player.transform.position = new Vector3(0f, 1f, 0f);
 
     }
 
@@ -52,8 +59,7 @@ public class PlayerData : NetworkBehaviour
             //then the client submits action data to server on each second
             float fraction = Mathf.Repeat(masterClock.Value, 3.0f);
             if (fraction > 2.94f && submittedAction == false) {
-                //Debug.Log("sent the server a message at: " + Time.time);
-                PingServerRpc(actionType, target);     //send all action data client -> server
+                PingServerRpc(actionType, target);     //send all action data from the client -> server
                 submittedAction = true;
                 actionType = 0;
             } else
@@ -72,13 +78,14 @@ public class PlayerData : NetworkBehaviour
 
         var clientId = serverRpcParams.Receive.SenderClientId;
         Debug.Log("Client ID: " + clientId + ", actionType: " + actionType + ", target: " + target);
-        BroadcastClientRpc(clientId, actionType, target);       
+        BroadcastClientRpc(clientId, actionType, target);       //after receiving the message from a client, broadcast: server -> all clients
     }
 
     [ClientRpc]
-    void BroadcastClientRpc(ulong clientId, int actionType, Vector3 target) {
+    void BroadcastClientRpc(ulong clientId, int actionType, Vector3 target) { 
 
         Debug.Log("Client ID: " + clientId + ", actionType: " + actionType + ", target: " + target);
+
     }
     
 
