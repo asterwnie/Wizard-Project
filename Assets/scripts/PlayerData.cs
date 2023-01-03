@@ -5,11 +5,15 @@ public class PlayerData : NetworkBehaviour
 {
     private NetworkVariable<float> masterClock = new NetworkVariable<float>();
     public NetworkVariable<Vector3> Position = new NetworkVariable<Vector3>();
+    public NetworkVariable<int> numClients = new NetworkVariable<int>();
+
 
     //network action data
-    public int actionType = 0;      //action type, 0 = idle, 1 = move, 2 = fireball, 3 = magic burst
-    public Vector3 target;          // coordinates of the screen pointer
+    int actionType = 0;      //action type, 0 = idle, 1 = move, 2 = fireball, 3 = magic burst
+    Vector3 target;          // coordinates of the screen pointer
     bool submittedAction = false;
+    GameObject[] allPlayers;
+    int numPlayers;
 
     //screen pointer
     Camera camera;
@@ -37,6 +41,11 @@ public class PlayerData : NetworkBehaviour
 
     void Update()
     {
+        //calculate the number of players in the game
+        allPlayers = GameObject.FindGameObjectsWithTag("Player");
+        numPlayers = allPlayers.Length;
+        //Debug.Log(numPlayers);
+
         //move pointer sphere to mouse location
         if (Input.GetMouseButtonDown(0)) {
             RaycastHit hit;
@@ -55,9 +64,9 @@ public class PlayerData : NetworkBehaviour
         if (IsClient) {
 
             //the client figures out what action
-            detectAction();
+            DetectAction();
             
-            //then the client submits action data to server on each second
+            //then the client submits action data to server at an interval
             float fraction = Mathf.Repeat(masterClock.Value, 3.0f);
             if (fraction > 2.94f && submittedAction == false) {
                 PingServerRpc(actionType, target, transform.position);     //send all action data from the client -> server
@@ -99,7 +108,7 @@ public class PlayerData : NetworkBehaviour
         Debug.Log(pos);
     }
 
-    void detectAction() {
+    void DetectAction() {
         if (Input.GetKeyDown("a")) {
             actionType = 1;
         } else

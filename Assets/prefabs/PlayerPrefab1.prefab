@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 2470895623109150268}
   m_Layer: 0
   m_Name: PlayerPrefab1
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -125,7 +125,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e9ce5346c75ac8d4dbe5998403f76280, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Position:
+    m_InternalValue: {x: 0, y: 0, z: 0}
+  numClients:
+    m_InternalValue: 0
   actionType: 0
   target: {x: 0, y: 0, z: 0}
-  camera: {fileID: 0}
   pointer: {fileID: 0}
+  playerPrefab: {fileID: 0}
+  player: {fileID: 0}
