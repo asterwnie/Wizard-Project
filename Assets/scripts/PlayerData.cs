@@ -5,15 +5,12 @@ using TMPro;
 
 public class PlayerData : NetworkBehaviour
 {
-    public NetworkVariable<Vector3> Position = new NetworkVariable<Vector3>();
+    //public NetworkVariable<Vector3> Position = new NetworkVariable<Vector3>();
     public NetworkVariable<int> numClients = new NetworkVariable<int>();
 
     //network action data
     string actionType = "idle";
-    bool submittedAction = false;
     public Action action;
-    int numPlayers;
-    //public List<Action> allActions = new List<Action>();   //we will dump every action we hear into this list
 
     //screen pointer
     Camera camera;
@@ -78,9 +75,6 @@ public class PlayerData : NetworkBehaviour
 
     void Update()
     {
-            //calculate the number of players in the game
-            numPlayers = GameObject.FindGameObjectsWithTag("Player").Length;
-
             if (IsClient && IsOwner)
             {
 
@@ -94,7 +88,7 @@ public class PlayerData : NetworkBehaviour
 
             //hover
             float breathe = Mathf.Sin(2 * Time.time) * 0.2f;
-            transform.position = Position.Value + new Vector3(0.0f, breathe, 0.0f);
+            //transform.position = Position.Value + new Vector3(0.0f, breathe, 0.0f);
     }
 
     [ServerRpc(RequireOwnership=false)]
@@ -112,7 +106,7 @@ public class PlayerData : NetworkBehaviour
     [ServerRpc]
      void SubmitPositionRequestServerRpc(Vector3 pos, ServerRpcParams rpcParams = default)
      {
-        Position.Value = pos;
+        //Position.Value = pos;
      }
 
     public void ClearSpellSelection()
@@ -120,6 +114,7 @@ public class PlayerData : NetworkBehaviour
         spellTarget = Vector3.zero;
         selectedSpell = null;
         pointer.SetActive(false);
+        isAimingSpell = false;
     }
 
     void DetectInput() {
@@ -146,7 +141,6 @@ public class PlayerData : NetworkBehaviour
 
                     // set target of spell
                     SendActionServerRpc(actionType, pointer.transform.position, selectedSpell.GetSpellType()); //send action data from the client -> server
-                    submittedAction = true;
                 }
                 else
                 {
