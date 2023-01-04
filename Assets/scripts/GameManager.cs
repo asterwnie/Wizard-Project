@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using Unity.Netcode;
+using UnityEngine.UI;
 using TMPro;
 
 public class GameManager : NetworkBehaviour
@@ -16,29 +17,21 @@ public class GameManager : NetworkBehaviour
     public GameObject pointerSelected;
     public HelloWorldManager networkManager;
     public PlayerData localPlayer;
-   // public setupGrid grid;
 
-    // spellcasting
-    [Header("Spellcasting")]
-    public TMP_Text selectedSpellName;
-    public Spell selectedSpell;
     public Material fireballMaterial; // THIS IS SUPER PLACEHOLDER
-    public GameObject projectilePrefab;
-    bool isCastingAnimation = false;
-    WorldTile selectedTile;
-    
-    // range indicator
-    float lineThetaScale = 0.01f;
-    float radius;
-    int linePoints;
-    LineRenderer lineRenderer;
-    float lineTheta = 0f;
-    public Material rangeIndicatorMaterial;
-    public float lineWidth = 0.05f;
+    public GameObject fireballProjectilePrefab;
+    public GameObject spellburstProjectilePrefab;
+
+    public GameObject plannedSkillGraphic;
 
     // turns
-    public float roundStartTime = 0f;
-    float roundDuration = 6f;
+    [Header("Rounds")]
+    public Image timerBar;
+    float currentTime;
+    float roundStartTime = 0f;
+    static float roundDuration = 6f;
+    public bool roundActive = false;
+    
 
 
     // create a singleton so the Gamemanager can be found without Gamemanager.find
@@ -59,16 +52,8 @@ public class GameManager : NetworkBehaviour
     // Start is called before the first frame update
     void Start()
     {
-      //  tileHighligher.SetActive(false);
-      //  tileSelected.SetActive(false);
-
-        // for radius indicator
-        lineRenderer = gameObject.AddComponent<LineRenderer>();
-        lineRenderer.material = rangeIndicatorMaterial;
-        lineRenderer.startWidth = lineWidth; //thickness of line
-        lineRenderer.endWidth = lineWidth;
-
         roundStartTime = masterClock.Value; // start the clock...this should probably not happen RIGHT at start ******
+        roundActive = true;
     }
 
     // Update is called once per frame
@@ -78,86 +63,81 @@ public class GameManager : NetworkBehaviour
         {
             //server solely dictates the clock
             masterClock.Value += Time.deltaTime;
+            BroadcastTimeClientRpc(masterClock.Value, roundStartTime); // send server time to clients
 
-            if (masterClock.Value - roundStartTime >= roundDuration)
+            // if the round is up, reset to do next round
+            if (roundActive && masterClock.Value - roundStartTime >= roundDuration)
             {
-                roundStartTime = masterClock.Value;
+                roundActive = false;
+                BroadcastRoundActiveClientRpc(roundActive);
                 SpellHandler.Instance.ResolveTurn();
+                ResetRoundClientRpc();
             }
         }
 
-
-        // update spell UI
-        if (selectedSpell != null)
-            selectedSpellName.text = selectedSpell.GetName();
-        else
-            selectedSpellName.text = "None";
-
-        if (selectedSpell != null && !isCastingAnimation)
-            ShowRange();
-        else
-            lineRenderer.enabled = false;
+        UpdateUI();
     }
 
-    public void ShowRange()
+    public void ResetRoundTime()
     {
-        // show range indicator of selected spell
-        lineRenderer.enabled = true;
-        lineTheta = 0f;
-        linePoints = (int)((1f / lineThetaScale) + 1f);
-        lineRenderer.positionCount = linePoints;
-        radius = selectedSpell.GetRange();
-        Vector3 playerPos = localPlayer.transform.position;
-        for (int i = 0; i < linePoints; i++)
+        if (IsServer)
         {
-            lineTheta += (2.0f * Mathf.PI * lineThetaScale);
-            float x = radius * Mathf.Cos(lineTheta);
-            float y = radius * Mathf.Sin(lineTheta);
-            lineRenderer.SetPosition(i, new Vector3(x + playerPos.x, 0.25f, y + playerPos.z));
+            roundActive = true;
+            BroadcastRoundActiveClientRpc(roundActive);
+            roundStartTime = masterClock.Value;
         }
     }
 
-    public void DeselectSpell() // called when a click occurs outside the tilezone
+    [ClientRpc]
+    void BroadcastTimeClientRpc(float serverTime, float roundStartTime)
     {
-        // deselect tile
-        if (selectedTile)
-            selectedTile.selected = false;
-        selectedTile = null;
-        //tileSelected.SetActive(false);
-
-        // deselect spell
-        selectedSpell = null;
+        if (IsClient)
+        {
+            currentTime = serverTime;
+            this.roundStartTime = roundStartTime;
+        }
     }
 
-    //spells .... can probably be cleaned up later
-    public void SelectSpellBurst()
+    [ClientRpc]
+    void BroadcastRoundActiveClientRpc(bool roundActive)
     {
-        selectedSpell = new SpellBurst();
+        if (IsClient)
+        {
+            this.roundActive = roundActive;
+        }
     }
 
-    public void SelectFireball()
+    [ClientRpc]
+    void ResetRoundClientRpc()
     {
-        selectedSpell = new SpellFireball();
+        if (IsClient)
+        {
+            localPlayer.ClearSpellSelection();
+            localPlayer.RemovePlannedSpells();
+        }
+    }
+
+    public void UpdateUI()
+    {
+        if (IsClient)
+        {
+            // update timer ui
+            timerBar.fillAmount = 1f - ((currentTime - roundStartTime) / roundDuration);
+        }
+
+        if(IsServer)
+        {
+            // update timer ui
+            timerBar.fillAmount = 1f - ((masterClock.Value - roundStartTime) / roundDuration);
+        }
         
     }
 
-    public void ClearSpellSelection()
+
+    // sends to player to handle spell selection
+    public void SelectSpell(int number)
     {
-        selectedSpell = null;
+        localPlayer.SelectSpell(number);
     }
 
-    /*public void ConfirmSpell()
-    {
-        // check if there is a selected spell and a selected tile
-        if(selectedSpell != null && selectedTile != null)
-        {
-            StartCoroutine(selectedSpell.ExecuteSpell(localPlayer, selectedTile.footLoc.transform.position));
-        }
-    }*/
-
-    public void ExecuteSpell(Vector3 origin, Action action)
-    {
-        Spell fireball = new SpellFireball(); // placeholder
-        StartCoroutine(fireball.ExecuteSpell(origin, action.targetPosition));
-    }
 }
