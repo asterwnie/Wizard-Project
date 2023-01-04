@@ -159,6 +159,7 @@ public class PlayerData : NetworkBehaviour
             {
                 //move
                 actionType = "move";
+                SendActionServerRpc(actionType, pointer.transform.position);
             }
         } 
         else if (Input.GetKeyDown(KeyCode.Alpha1)) {
