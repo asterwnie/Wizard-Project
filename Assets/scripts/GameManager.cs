@@ -21,7 +21,6 @@ public class GameManager : NetworkBehaviour
     public Material fireballMaterial; // THIS IS SUPER PLACEHOLDER
     public GameObject fireballProjectilePrefab;
     public GameObject spellburstProjectilePrefab;
-
     public GameObject plannedSkillGraphic;
 
     // turns

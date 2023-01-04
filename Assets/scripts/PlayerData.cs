@@ -78,40 +78,23 @@ public class PlayerData : NetworkBehaviour
 
     void Update()
     {
+            //calculate the number of players in the game
+            numPlayers = GameObject.FindGameObjectsWithTag("Player").Length;
 
-        //calculate the number of players in the game
-        numPlayers = GameObject.FindGameObjectsWithTag("Player").Length;
-        
-        if (IsClient) {
+            if (IsClient && IsOwner)
+            {
 
-            //the client figures out what action
-            DetectInput();
-            
-            /*//then the client submits action data to server at an interval
-            float fraction = Mathf.Repeat(GameManager.Instance.GetServerClock().Value, 3.0f); // last float is the round length
-            if (fraction > 2.94f && submittedAction == false) {
-                SendActionServerRpc(actionType, pointer.transform.position);     //send action data from the client -> server
-                submittedAction = true;
-                actionType = "idle";
-            } else
-            if (fraction < 1.8f && submittedAction == true) {
-                submittedAction = false;
-            }*/
+                DetectInput();
 
+                if (selectedSpell != null)
+                    ShowRange();
+                else
+                    lineRenderer.enabled = false;
+            }
 
-            if (selectedSpell != null)
-                ShowRange();
-            else
-                lineRenderer.enabled = false;
-        }
-
-        //hover
-        float breathe = Mathf.Sin(2*Time.time) * 0.2f;
-        transform.position = Position.Value + new Vector3(0.0f, breathe, 0.0f);
-       /* if (hasMoved == false)
-        {
-            transform.position = Position.Value;
-        }*/
+            //hover
+            float breathe = Mathf.Sin(2 * Time.time) * 0.2f;
+            transform.position = Position.Value + new Vector3(0.0f, breathe, 0.0f);
     }
 
     [ServerRpc(RequireOwnership=false)]
@@ -123,7 +106,6 @@ public class PlayerData : NetworkBehaviour
         Debug.Log(action.printInfo());
         SpellHandler.Instance.actionsQueue.Add(action); // add to the server's spell handler
         ClearSpellSelection();
-        //BroadcastClientRpc(clientId, action);       //after receiving the message from a client, broadcast: server -> all clients
     }
 
 

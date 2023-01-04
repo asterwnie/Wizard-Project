@@ -35,7 +35,6 @@ public class SpellHandler : NetworkBehaviour
             Debug.Log(action.printInfo());
 
             GameObject actingPlayer = NetworkManager.Singleton.ConnectedClients[action.ownerId].PlayerObject.gameObject;
-            //PlayerData playerData = actingPlayer.GetComponent<PlayerData>();
 
             if (action.type == "spell")
             {
@@ -80,17 +79,17 @@ public class SpellHandler : NetworkBehaviour
 
     public void ExecuteSpell(Vector3 origin, Action action)
     {
-        Spell spell;
-        switch (action.spellType)
-        {
-            case Spell.SpellType.FIREBALL:
-                spell = new SpellFireball();
-                StartCoroutine(spell.ExecuteSpell(origin, action.targetPosition));
-                return;
-            case Spell.SpellType.SPELL_BURST:
-                spell = new SpellBurst();
-                StartCoroutine(spell.ExecuteSpell(origin, action.targetPosition));
-                return;
-        }
+            Spell spell;
+            switch (action.spellType)
+            {
+                case Spell.SpellType.FIREBALL:
+                    spell = new SpellFireball();
+                    StartCoroutine(spell.ExecuteSpell(origin, action.targetPosition));
+                    return;
+                case Spell.SpellType.SPELL_BURST:
+                    spell = new SpellBurst();
+                    StartCoroutine(spell.ExecuteSpell(origin, action.targetPosition));
+                    return;
+            }
     }
 }
