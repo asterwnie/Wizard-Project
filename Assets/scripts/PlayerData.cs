@@ -35,10 +35,10 @@ public class PlayerData : NetworkBehaviour
     List<GameObject> plannedActionIndicators = new List<GameObject>(); // rendered gameobjects that show what the player is going to do, deleted after moves have been done
 
     //placeholder spells - should be
-    Spell spell1 = new SpellFireball();
-    Spell spell2 = new SpellBurst();
-    Spell spell3 = new SpellFireball();
-    Spell spell4 = new SpellFireball();
+    public Spell spell1 = new SpellFireball();
+    public Spell spell2 = new SpellBurst();
+    public Spell spell3 = new SpellIceShard();
+    public Spell spell4 = new SpellOrbShield();
 
 
     // range indicator
@@ -162,23 +162,19 @@ public class PlayerData : NetworkBehaviour
             }
         } 
         else if (Input.GetKeyDown(KeyCode.Alpha1)) {
-            actionType = "spell";
             SelectSpell(1);
         }
         else if (Input.GetKeyDown(KeyCode.Alpha2))
         {
-            actionType = "spell";
             SelectSpell(2);
         }
         else if (Input.GetKeyDown(KeyCode.Alpha3))
         {
-            actionType = "spell";
             SelectSpell(3);
         }
         else if (Input.GetKeyDown(KeyCode.Alpha4))
         {
-            actionType = "spell";
-            SelectSpell(3);
+            SelectSpell(4);
         }
     }
 
@@ -209,7 +205,8 @@ public class PlayerData : NetworkBehaviour
     public void SelectSpell(int number)
     {
         isAimingSpell = true;
-        switch(number)
+        actionType = "spell";
+        switch (number)
         {
             case 1: 
                 selectedSpell = spell1;
