@@ -41,7 +41,7 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: 172ea9f015beee84cb9165a8c227e056, type: 2}
     - target: {fileID: 7515922139310069198, guid: 02474c37358e20748a6ffb65a8c3d644, type: 3}
       propertyPath: m_Name
-      value: GenericBlueProjectile
+      value: GenericBlueProjectile Variant
       objectReference: {fileID: 0}
     - target: {fileID: 8503343292402189035, guid: 02474c37358e20748a6ffb65a8c3d644, type: 3}
       propertyPath: m_RootOrder
@@ -98,6 +98,18 @@ PrefabInstance:
     - target: {fileID: 8514561442423996054, guid: 02474c37358e20748a6ffb65a8c3d644, type: 3}
       propertyPath: InitialModule.startColor.maxColor.r
       value: 0.4943396
+      objectReference: {fileID: 0}
+    - target: {fileID: 8514561442423996054, guid: 02474c37358e20748a6ffb65a8c3d644, type: 3}
+      propertyPath: ColorModule.gradient.maxGradient.key0.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8514561442423996054, guid: 02474c37358e20748a6ffb65a8c3d644, type: 3}
+      propertyPath: ColorModule.gradient.maxGradient.key0.g
+      value: 0.9341817
+      objectReference: {fileID: 0}
+    - target: {fileID: 8514561442423996054, guid: 02474c37358e20748a6ffb65a8c3d644, type: 3}
+      propertyPath: ColorModule.gradient.maxGradient.key0.r
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 02474c37358e20748a6ffb65a8c3d644, type: 3}

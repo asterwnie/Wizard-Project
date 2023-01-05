@@ -79,17 +79,25 @@ public class SpellHandler : NetworkBehaviour
 
     public void ExecuteSpell(Vector3 origin, Action action)
     {
-            Spell spell;
-            switch (action.spellType)
-            {
-                case Spell.SpellType.FIREBALL:
-                    spell = new SpellFireball();
-                    StartCoroutine(spell.ExecuteSpell(origin, action.targetPosition));
-                    return;
-                case Spell.SpellType.SPELL_BURST:
-                    spell = new SpellBurst();
-                    StartCoroutine(spell.ExecuteSpell(origin, action.targetPosition));
-                    return;
-            }
+        Spell spell;
+        switch (action.spellType)
+        {
+            case Spell.SpellType.FIREBALL:
+                spell = new SpellFireball();
+                StartCoroutine(spell.ExecuteSpell(origin, action.targetPosition));
+                return;
+            case Spell.SpellType.SPELL_BURST:
+                spell = new SpellBurst();
+                StartCoroutine(spell.ExecuteSpell(origin, action.targetPosition));
+                return;
+            case Spell.SpellType.ICE_SHARD:
+                spell = new SpellIceShard();
+                StartCoroutine(spell.ExecuteSpell(origin, action.targetPosition));
+                return;
+            case Spell.SpellType.ORB_SHIELD:
+                spell = new SpellOrbShield();
+                StartCoroutine(spell.ExecuteSpell(origin, action.targetPosition));
+                return;
+        }
     }
 }

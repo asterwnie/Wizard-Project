@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.4366756, g: 0.48427194, b: 0.5645252, a: 1}
+  m_IndirectSpecularColor: {r: 0.4366757, g: 0.48427194, b: 0.5645252, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -230,11 +230,11 @@ RectTransform:
   - {fileID: 1490962510}
   - {fileID: 809964557}
   m_Father: {fileID: 1539109775}
-  m_RootOrder: 2
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: 81, y: 33.367004}
+  m_AnchoredPosition: {x: 81, y: 33.367016}
   m_SizeDelta: {x: 50, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &97198715
@@ -288,7 +288,7 @@ MonoBehaviour:
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 3
+          m_IntArgument: 4
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -465,7 +465,7 @@ RectTransform:
   - {fileID: 1205490748}
   - {fileID: 280400218}
   m_Father: {fileID: 1539109775}
-  m_RootOrder: 3
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
@@ -523,7 +523,7 @@ MonoBehaviour:
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 4
+          m_IntArgument: 3
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -765,7 +765,7 @@ GameObject:
   - component: {fileID: 280400220}
   - component: {fileID: 280400219}
   m_Layer: 5
-  m_Name: SpellNumber
+  m_Name: SpellNumber3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1777,7 +1777,7 @@ GameObject:
   - component: {fileID: 803438701}
   - component: {fileID: 803438700}
   m_Layer: 5
-  m_Name: SpellNumber
+  m_Name: SpellNumber2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1911,7 +1911,7 @@ GameObject:
   - component: {fileID: 809964559}
   - component: {fileID: 809964558}
   m_Layer: 5
-  m_Name: SpellNumber
+  m_Name: SpellNumber4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2045,7 +2045,7 @@ GameObject:
   - component: {fileID: 834548695}
   - component: {fileID: 834548694}
   m_Layer: 5
-  m_Name: SpellName
+  m_Name: SpellName1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2090,7 +2090,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Fireball
+  m_text: Spell1
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -3081,9 +3081,14 @@ MonoBehaviour:
   pointerSelected: {fileID: 1536713132}
   networkManager: {fileID: 1261360924}
   localPlayer: {fileID: 0}
+  spell1Text: {fileID: 834548694}
+  spell2Text: {fileID: 1642436721}
+  spell3Text: {fileID: 1205490749}
+  spell4Text: {fileID: 1490962511}
   fireballMaterial: {fileID: 2100000, guid: 50415394e49d5f84c81a98d806913a21, type: 2}
   fireballProjectilePrefab: {fileID: 7515922139310069198, guid: 02474c37358e20748a6ffb65a8c3d644, type: 3}
   spellburstProjectilePrefab: {fileID: 1638432386573877086, guid: 406b3ac18ce4b68489ac35f72c84eedd, type: 3}
+  iceShardProjectilePrefab: {fileID: 1210690849743141121, guid: ce7ef438900d1e243bbe4d73a4e63cce, type: 3}
   plannedSkillGraphic: {fileID: 3074191300808739061, guid: 70349ace0d65e864e8af1ad2180e15c1, type: 3}
   timerBar: {fileID: 1069733073}
   roundActive: 0
@@ -3094,7 +3099,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1104636506}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a4ab6522fecd0b743861beb18c0301a9, type: 3}
   m_Name: 
@@ -3546,7 +3551,7 @@ GameObject:
   - component: {fileID: 1205490750}
   - component: {fileID: 1205490749}
   m_Layer: 5
-  m_Name: SpellName
+  m_Name: SpellName3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4587,7 +4592,7 @@ GameObject:
   - component: {fileID: 1490962512}
   - component: {fileID: 1490962511}
   m_Layer: 5
-  m_Name: SpellName
+  m_Name: SpellName4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4976,8 +4981,8 @@ RectTransform:
   m_Children:
   - {fileID: 1546574553}
   - {fileID: 2097926133}
-  - {fileID: 97198714}
   - {fileID: 164554692}
+  - {fileID: 97198714}
   m_Father: {fileID: 131453093}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -5458,7 +5463,7 @@ GameObject:
   - component: {fileID: 1637929936}
   - component: {fileID: 1637929935}
   m_Layer: 5
-  m_Name: SpellNumber
+  m_Name: SpellNumber1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5685,7 +5690,7 @@ GameObject:
   - component: {fileID: 1642436722}
   - component: {fileID: 1642436721}
   m_Layer: 5
-  m_Name: SpellName
+  m_Name: SpellName2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5730,9 +5735,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Magic
-
-    Burst'
+  m_text: Spell2
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

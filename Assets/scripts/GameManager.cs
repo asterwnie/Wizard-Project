@@ -18,9 +18,17 @@ public class GameManager : NetworkBehaviour
     public HelloWorldManager networkManager;
     public PlayerData localPlayer;
 
+    [Header("Spell Buttons")]
+    public TMP_Text spell1Text;
+    public TMP_Text spell2Text;
+    public TMP_Text spell3Text;
+    public TMP_Text spell4Text;
+
+    [Header("Spell References")]
     public Material fireballMaterial; // THIS IS SUPER PLACEHOLDER
     public GameObject fireballProjectilePrefab;
     public GameObject spellburstProjectilePrefab;
+    public GameObject iceShardProjectilePrefab;
     public GameObject plannedSkillGraphic;
 
     // turns
@@ -122,6 +130,12 @@ public class GameManager : NetworkBehaviour
         {
             // update timer ui
             timerBar.fillAmount = 1f - ((currentTime - roundStartTime) / roundDuration);
+
+            // update spells to reflect player's spell names
+            spell1Text.text = localPlayer.spell1.GetName();
+            spell2Text.text = localPlayer.spell2.GetName();
+            spell3Text.text = localPlayer.spell3.GetName();
+            spell4Text.text = localPlayer.spell4.GetName();
         }
 
         if(IsServer)
