@@ -22,17 +22,16 @@ public class PlayerData : NetworkBehaviour
 
     //player
     [Header("Player Stats")]
-    public GameObject playerPrefab;
-    public GameObject player;
+    public GameObject playerModel;
     static int maxHealth = 100;
     int currentHealth;
 
     // spellcasting
     [Header("Spellcasting")]
+    List<GameObject> plannedActionIndicators = new List<GameObject>(); // rendered gameobjects that show what the player is going to do, deleted after moves have been done
     public Spell selectedSpell;
     Vector3 spellTarget;
     bool isAimingSpell = false;
-    List<GameObject> plannedActionIndicators = new List<GameObject>(); // rendered gameobjects that show what the player is going to do, deleted after moves have been done
 
     //placeholder spells - should be
     public Spell spell1 = new SpellFireball();
@@ -70,7 +69,7 @@ public class PlayerData : NetworkBehaviour
         if (IsOwner)
         {
             // move player to random location
-            SubmitPositionRequestServerRpc(new Vector3(Random.Range(0f, 9f), 1f, Random.Range(0f, 9f)));
+            SubmitPositionRequestServerRpc(new Vector3(Random.Range(0f, 9f), 0.5f, Random.Range(0f, 9f)));
             GameManager.Instance.localPlayer = this;
             currentHealth = maxHealth;
         }
@@ -78,23 +77,23 @@ public class PlayerData : NetworkBehaviour
 
     void Update()
     {
-            //calculate the number of players in the game
-            numPlayers = GameObject.FindGameObjectsWithTag("Player").Length;
+        //calculate the number of players in the game
+        numPlayers = GameObject.FindGameObjectsWithTag("Player").Length;
 
-            if (IsClient && IsOwner)
-            {
+        if (IsClient && IsOwner)
+        {
 
-                DetectInput();
+            DetectInput();
 
-                if (selectedSpell != null)
-                    ShowRange();
-                else
-                    lineRenderer.enabled = false;
-            }
+            if (selectedSpell != null)
+                ShowRange();
+            else
+                lineRenderer.enabled = false;
+        }
 
-            //hover
-            float breathe = Mathf.Sin(2 * Time.time) * 0.2f;
-            transform.position = Position.Value + new Vector3(0.0f, breathe, 0.0f);
+        //hover
+        float breathe = Mathf.Sin(2 * Time.time) * 0.2f;
+        transform.position = Position.Value + new Vector3(0.0f, breathe, 0.0f);
     }
 
     [ServerRpc(RequireOwnership=false)]
@@ -196,6 +195,11 @@ public class PlayerData : NetworkBehaviour
         if (Physics.Raycast(ray, out hit, playLayer))
         {
             pointer.transform.position = hit.point + new Vector3(0f, 0.25f, 0f);
+
+            //player look at pointer
+            playerModel.transform.LookAt(new Vector3(pointer.transform.position.x, playerModel.transform.position.y, pointer.transform.position.z));
+
+            // return pointer pos for spell targeting
             return pointer.transform.position;
         }
 

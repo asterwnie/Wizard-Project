@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 9909283aedfb9c048838fe2a04f9a9f5
+guid: 9f0bfaabb6beafa418b0174c5c154b18
 ModelImporter:
   serializedVersion: 20200
   internalIDToNameTable: []
@@ -7,8 +7,8 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: pasted__palettes_1
-    second: {fileID: 2100000, guid: 8c1e2e9217552594390596112de74935, type: 2}
+      name: petal
+    second: {fileID: 2100000, guid: fe3e8fa016339714dafa2668d1a2fb9b, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
