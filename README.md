@@ -1,3 +1,3 @@
 # Wizard-Project
 
-![Wizard project screenshot](https://i.gyazo.com/cfc228253367412caebe6f8633381db3.png)
+![Wizard project screenshot](https://i.gyazo.com/2bdae953eb0e3a888f0e63d5684873b6.png)

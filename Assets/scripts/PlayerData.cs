@@ -5,12 +5,15 @@ using TMPro;
 
 public class PlayerData : NetworkBehaviour
 {
-    //public NetworkVariable<Vector3> Position = new NetworkVariable<Vector3>();
+    public NetworkVariable<Vector3> Position = new NetworkVariable<Vector3>();
     public NetworkVariable<int> numClients = new NetworkVariable<int>();
 
     //network action data
     string actionType = "idle";
+    bool submittedAction = false;
     public Action action;
+    int numPlayers;
+    //public List<Action> allActions = new List<Action>();   //we will dump every action we hear into this list
 
     //screen pointer
     Camera camera;
@@ -19,18 +22,16 @@ public class PlayerData : NetworkBehaviour
 
     //player
     [Header("Player Stats")]
-    public GameObject playerPrefab;
-    public GameObject player;
+    public GameObject playerModel;
     static int maxHealth = 100;
     int currentHealth;
-    public int actionPoints;
 
     // spellcasting
     [Header("Spellcasting")]
+    List<GameObject> plannedActionIndicators = new List<GameObject>(); // rendered gameobjects that show what the player is going to do, deleted after moves have been done
     public Spell selectedSpell;
     Vector3 spellTarget;
     bool isAimingSpell = false;
-    List<GameObject> plannedActionIndicators = new List<GameObject>(); // rendered gameobjects that show what the player is going to do, deleted after moves have been done
 
     //placeholder spells - should be
     public Spell spell1 = new SpellFireball();
@@ -49,7 +50,7 @@ public class PlayerData : NetworkBehaviour
     public float lineWidth = 0.05f;
 
     void Start() {
-        //grab camera and instantiate screen pointer
+        //grab camera and instantiate screen pointer sphere
         camera = GameObject.Find("Main Camera").GetComponent<Camera>();
         pointer = GameManager.Instance.pointerSelected;
 
@@ -68,28 +69,31 @@ public class PlayerData : NetworkBehaviour
         if (IsOwner)
         {
             // move player to random location
-            SubmitPositionRequestServerRpc(new Vector3(Random.Range(0f, 9f), 1f, Random.Range(0f, 9f)));
+            SubmitPositionRequestServerRpc(new Vector3(Random.Range(0f, 9f), 0.5f, Random.Range(0f, 9f)));
             GameManager.Instance.localPlayer = this;
             currentHealth = maxHealth;
-            MovePointer();  
         }
     }
 
     void Update()
     {
-            if (IsClient && IsOwner)
-            {
-                DetectInput();
+        //calculate the number of players in the game
+        numPlayers = GameObject.FindGameObjectsWithTag("Player").Length;
 
-                if (selectedSpell != null)
-                    ShowRange();
-                else
-                    lineRenderer.enabled = false;
-            }
+        if (IsClient && IsOwner)
+        {
 
-            //hover
-            float breathe = Mathf.Sin(2 * Time.time) * 0.2f;
-            //transform.position = Position.Value + new Vector3(0.0f, breathe, 0.0f);
+            DetectInput();
+
+            if (selectedSpell != null)
+                ShowRange();
+            else
+                lineRenderer.enabled = false;
+        }
+
+        //hover
+        float breathe = Mathf.Sin(2 * Time.time) * 0.2f;
+        transform.position = Position.Value + new Vector3(0.0f, breathe, 0.0f);
     }
 
     [ServerRpc(RequireOwnership=false)]
@@ -107,7 +111,7 @@ public class PlayerData : NetworkBehaviour
     [ServerRpc]
      void SubmitPositionRequestServerRpc(Vector3 pos, ServerRpcParams rpcParams = default)
      {
-        //Position.Value = pos;
+        Position.Value = pos;
      }
 
     public void ClearSpellSelection()
@@ -115,7 +119,6 @@ public class PlayerData : NetworkBehaviour
         spellTarget = Vector3.zero;
         selectedSpell = null;
         pointer.SetActive(false);
-        isAimingSpell = false;
     }
 
     void DetectInput() {
@@ -142,6 +145,7 @@ public class PlayerData : NetworkBehaviour
 
                     // set target of spell
                     SendActionServerRpc(actionType, pointer.transform.position, selectedSpell.GetSpellType()); //send action data from the client -> server
+                    submittedAction = true;
                 }
                 else
                 {
@@ -154,7 +158,6 @@ public class PlayerData : NetworkBehaviour
             {
                 //move
                 actionType = "move";
-                SendActionServerRpc(actionType, pointer.transform.position);
             }
         } 
         else if (Input.GetKeyDown(KeyCode.Alpha1)) {
@@ -177,7 +180,7 @@ public class PlayerData : NetworkBehaviour
     Vector3 MovePointer()
     {
         // if casting a spell, only set active when the pointer is in casting range
-        pointer.SetActive(true);
+        pointer.SetActive(false);
         if (selectedSpell != null)
         {
             if (Vector3.Distance(pointer.transform.position, gameObject.transform.position) <= selectedSpell.GetRange())
@@ -192,6 +195,11 @@ public class PlayerData : NetworkBehaviour
         if (Physics.Raycast(ray, out hit, playLayer))
         {
             pointer.transform.position = hit.point + new Vector3(0f, 0.25f, 0f);
+
+            //player look at pointer
+            playerModel.transform.LookAt(new Vector3(pointer.transform.position.x, playerModel.transform.position.y, pointer.transform.position.z));
+
+            // return pointer pos for spell targeting
             return pointer.transform.position;
         }
 
