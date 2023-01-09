@@ -23,6 +23,7 @@ public class PlayerData : NetworkBehaviour
     public GameObject player;
     static int maxHealth = 100;
     int currentHealth;
+    public int actionPoints;
 
     // spellcasting
     [Header("Spellcasting")]
@@ -48,7 +49,7 @@ public class PlayerData : NetworkBehaviour
     public float lineWidth = 0.05f;
 
     void Start() {
-        //grab camera and instantiate screen pointer sphere
+        //grab camera and instantiate screen pointer
         camera = GameObject.Find("Main Camera").GetComponent<Camera>();
         pointer = GameManager.Instance.pointerSelected;
 
@@ -70,6 +71,7 @@ public class PlayerData : NetworkBehaviour
             SubmitPositionRequestServerRpc(new Vector3(Random.Range(0f, 9f), 1f, Random.Range(0f, 9f)));
             GameManager.Instance.localPlayer = this;
             currentHealth = maxHealth;
+            MovePointer();  
         }
     }
 
@@ -77,7 +79,6 @@ public class PlayerData : NetworkBehaviour
     {
             if (IsClient && IsOwner)
             {
-
                 DetectInput();
 
                 if (selectedSpell != null)
@@ -176,7 +177,7 @@ public class PlayerData : NetworkBehaviour
     Vector3 MovePointer()
     {
         // if casting a spell, only set active when the pointer is in casting range
-        pointer.SetActive(false);
+        pointer.SetActive(true);
         if (selectedSpell != null)
         {
             if (Vector3.Distance(pointer.transform.position, gameObject.transform.position) <= selectedSpell.GetRange())
