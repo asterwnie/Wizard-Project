@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 
 public class PlayerData : NetworkBehaviour
@@ -10,7 +11,6 @@ public class PlayerData : NetworkBehaviour
 
     //network action data
     string actionType = "idle";
-    bool submittedAction = false;
     public Action action;
     int numPlayers;
     //public List<Action> allActions = new List<Action>();   //we will dump every action we hear into this list
@@ -23,8 +23,11 @@ public class PlayerData : NetworkBehaviour
     //player
     [Header("Player Stats")]
     public GameObject playerModel;
-    static int maxHealth = 100;
-    int currentHealth;
+    public Image healthBarUI;
+    static public int maxHealth = 100;
+    static public int maxMana = 4;
+    public NetworkVariable<int> CurrentHealth;
+    int currentMana;
 
     // spellcasting
     [Header("Spellcasting")]
@@ -38,7 +41,6 @@ public class PlayerData : NetworkBehaviour
     public Spell spell2 = new SpellBurst();
     public Spell spell3 = new SpellIceShard();
     public Spell spell4 = new SpellOrbShield();
-
 
     // range indicator
     float lineThetaScale = 0.01f;
@@ -71,8 +73,24 @@ public class PlayerData : NetworkBehaviour
             // move player to random location
             SubmitPositionRequestServerRpc(new Vector3(Random.Range(0f, 9f), 0.5f, Random.Range(0f, 9f)));
             GameManager.Instance.localPlayer = this;
-            currentHealth = maxHealth;
+            SubmitHealthRequestServerRpc(maxHealth);
+            currentMana = maxMana;
         }
+    }
+
+    public int GetMana() // gets the player's current mana
+    {
+        return currentMana;
+    }
+
+    public int GetHealth() // gets the player's current health
+    {
+        return CurrentHealth.Value;
+    }
+
+    public void ResetMana()
+    {
+        currentMana = maxMana;
     }
 
     void Update()
@@ -89,11 +107,15 @@ public class PlayerData : NetworkBehaviour
                 ShowRange();
             else
                 lineRenderer.enabled = false;
+
+            // update health bar
+            healthBarUI.fillAmount = CurrentHealth.Value / maxHealth;
         }
 
         //hover
-        float breathe = Mathf.Sin(2 * Time.time) * 0.2f;
-        transform.position = Position.Value + new Vector3(0.0f, breathe, 0.0f);
+        float breathe = Mathf.Sin(Time.time * 2f) * 0.003f;
+        playerModel.transform.position += new Vector3(0f, breathe, 0f);
+        transform.position = Position.Value;
     }
 
     [ServerRpc(RequireOwnership=false)]
@@ -102,23 +124,36 @@ public class PlayerData : NetworkBehaviour
         ulong clientId = serverRpcParams.Receive.SenderClientId;
         Action action = new Action(actionType, clientId, target, spellType);
 
-        Debug.Log(action.printInfo());
+        //Debug.Log(action.printInfo());
         SpellHandler.Instance.actionsQueue.Add(action); // add to the server's spell handler
         ClearSpellSelection();
     }
 
 
     [ServerRpc]
-     void SubmitPositionRequestServerRpc(Vector3 pos, ServerRpcParams rpcParams = default)
-     {
+    void SubmitPositionRequestServerRpc(Vector3 pos, ServerRpcParams rpcParams = default)
+    {
         Position.Value = pos;
-     }
+    }
+
+    [ServerRpc]
+    void SubmitHealthRequestServerRpc(int health, ServerRpcParams rpcParams = default)
+    {
+        CurrentHealth.Value = health;
+    }
+
+    public void SetHealth(int health)
+    {
+        if (IsOwner)
+            SubmitHealthRequestServerRpc(health);
+    }
 
     public void ClearSpellSelection()
     {
         spellTarget = Vector3.zero;
         selectedSpell = null;
         pointer.SetActive(false);
+        GameManager.Instance.ResetSpellSelectionUI();
     }
 
     void DetectInput() {
@@ -135,17 +170,36 @@ public class PlayerData : NetworkBehaviour
             {
                 spellTarget = pointerLoc;
                 // check if target is in range of the spell
-                if (Vector3.Distance(spellTarget, gameObject.transform.position) <= selectedSpell.GetRange())
+                if(pointerLoc == Vector3.zero)
                 {
+                    // if the pointer is not in range, hide the pointer and deselect spell
+                    ClearSpellSelection();
+                }
+                else if (Vector3.Distance(spellTarget, gameObject.transform.position) <= selectedSpell.GetRange())
+                {
+                    isAimingSpell = false;
+
+                    // remove mana
+                    currentMana -= selectedSpell.GetManaCost();
+
                     // make a planning indicator of the action for the client to render
                     GameObject planningGraphic = GameObject.Instantiate(GameManager.Instance.plannedSkillGraphic);
-                    planningGraphic.transform.position = pointer.transform.position;
+                    planningGraphic.transform.position = pointerLoc;
                     planningGraphic.GetComponentInChildren<TMP_Text>().text = selectedSpell.GetName();
                     plannedActionIndicators.Add(planningGraphic);
 
+                    // planning line
+                    GameObject planningLine = new GameObject("planning_line");
+                    LineRenderer lineRenderer = planningLine.AddComponent<LineRenderer>();
+                    lineRenderer.SetPosition(0,transform.position);
+                    lineRenderer.SetPosition(1, pointerLoc);
+                    lineRenderer.startWidth = lineWidth;
+                    lineRenderer.endWidth = lineWidth;
+                    lineRenderer.material = rangeIndicatorMaterial;
+                    plannedActionIndicators.Add(planningLine);
+
                     // set target of spell
-                    SendActionServerRpc(actionType, pointer.transform.position, selectedSpell.GetSpellType()); //send action data from the client -> server
-                    submittedAction = true;
+                    SendActionServerRpc(actionType, pointerLoc, selectedSpell.GetSpellType()); //send action data from the client -> server
                 }
                 else
                 {
@@ -161,19 +215,23 @@ public class PlayerData : NetworkBehaviour
             }
         } 
         else if (Input.GetKeyDown(KeyCode.Alpha1)) {
-            SelectSpell(1);
+            GameManager.Instance.SelectSpell(1);
         }
         else if (Input.GetKeyDown(KeyCode.Alpha2))
         {
-            SelectSpell(2);
+            GameManager.Instance.SelectSpell(2);
         }
         else if (Input.GetKeyDown(KeyCode.Alpha3))
         {
-            SelectSpell(3);
+            GameManager.Instance.SelectSpell(3);
         }
         else if (Input.GetKeyDown(KeyCode.Alpha4))
         {
-            SelectSpell(4);
+            GameManager.Instance.SelectSpell(4);
+        }
+        else if(Input.GetKeyDown(KeyCode.Escape) || Input.GetMouseButtonDown(1))
+        {
+            ClearSpellSelection();
         }
     }
 
@@ -192,7 +250,7 @@ public class PlayerData : NetworkBehaviour
         //move pointer indicator to mouse location
         RaycastHit hit;
         Ray ray = camera.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out hit, playLayer))
+        if (Physics.Raycast(ray, out hit, 100f, playLayer))
         {
             pointer.transform.position = hit.point + new Vector3(0f, 0.25f, 0f);
 
@@ -212,17 +270,21 @@ public class PlayerData : NetworkBehaviour
         actionType = "spell";
         switch (number)
         {
-            case 1: 
-                selectedSpell = spell1;
+            case 1:
+                if (currentMana - spell1.GetManaCost() >= 0) { selectedSpell = spell1; }
+                else { actionType = "none"; isAimingSpell = false; }
                 return;
             case 2:
-                selectedSpell = spell2;
+                if (currentMana - spell2.GetManaCost() >= 0) { selectedSpell = spell2; }
+                else { actionType = "none"; isAimingSpell = false; }
                 return;
             case 3:
-                selectedSpell = spell3;
+                if (currentMana - spell3.GetManaCost() >= 0) { selectedSpell = spell3; }
+                else { actionType = "none"; isAimingSpell = false; }
                 return;
             case 4:
-                selectedSpell = spell4;
+                if (currentMana - spell4.GetManaCost() >= 0) { selectedSpell = spell4; }
+                else { actionType = "none"; isAimingSpell = false; }
                 return;
         }
             

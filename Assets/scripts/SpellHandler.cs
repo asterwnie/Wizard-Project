@@ -21,7 +21,6 @@ public class SpellHandler : NetworkBehaviour
     {
         if (IsServer)
         {
-            Debug.Log("Server: Resolving moves.");
             StartCoroutine(ResolveActions());
         }
     }
@@ -29,10 +28,11 @@ public class SpellHandler : NetworkBehaviour
     IEnumerator ResolveActions()
     {
         isResolving = true;
+        Debug.Log("Server: Resolving " + actionsQueue.Count + " move(s).");
         foreach (Action action in actionsQueue)   //resolve each action individually
         {
 
-            Debug.Log(action.printInfo());
+            //Debug.Log(action.printInfo());
 
             GameObject actingPlayer = NetworkManager.Singleton.ConnectedClients[action.ownerId].PlayerObject.gameObject;
 
@@ -61,6 +61,10 @@ public class SpellHandler : NetworkBehaviour
             }
         }
 
+        // reset each player's mana
+        foreach (ulong uid in NetworkManager.Singleton.ConnectedClientsIds)
+            NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(uid).GetComponent<PlayerData>().ResetMana();
+
         //after resolving everything, clear the action list
         actionsQueue.Clear();
         isResolving = false;
@@ -70,7 +74,7 @@ public class SpellHandler : NetworkBehaviour
     [ClientRpc]
     void BroadcastSpellClientRpc(Vector3 origin, Action action)
     {
-        if (IsClient)
+        if (IsClient && !IsServer)
         {
             Debug.Log("Client: Received spell broadcast. Executing spell.");
             ExecuteSpell(origin, action); // executes it for the client

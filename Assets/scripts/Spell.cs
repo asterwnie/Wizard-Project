@@ -23,6 +23,8 @@ public abstract class Spell
     protected string name;
     protected float range;
     protected float radius;
+    protected int manaCost;
+    protected int damage;
     public Spell() { }
 
     public SpellType GetSpellType()
@@ -44,6 +46,16 @@ public abstract class Spell
         return range;
     }
 
+    public int GetManaCost()
+    {
+        return manaCost;
+    }
+
+    public int GetDamage()
+    {
+        return damage;
+    }
+
     // this is done in a coroutine to ensure everything gets done in the right order
     public abstract IEnumerator ExecuteSpell(Vector3 origin, Vector3 targetPos);
 }
@@ -59,6 +71,8 @@ public class SpellFireball : Spell
         name = "Fireball";
         range = 4.5f;
         radius = 2f;
+        manaCost = 2;
+        damage = 20;
     }
 
     public override IEnumerator ExecuteSpell(Vector3 origin, Vector3 targetPos)
@@ -83,14 +97,14 @@ public class SpellFireball : Spell
         }
 
         // create the impact spell effect
-        GameObject spellEffect = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        GameObject spellEffect = GameObject.Instantiate(GameManager.Instance.fireballImpactPrefab);
         spellEffect.transform.position = targetPos;
-        spellEffect.transform.localScale = Vector3.zero;
-        Vector3 targetScale = new Vector3(this.GetRadius() * 2f, this.GetRadius() * 2f, this.GetRadius() * 2f);
-        spellEffect.GetComponent<Renderer>().material = GameManager.Instance.fireballMaterial;
+        //spellEffect.transform.localScale = Vector3.zero;
+        //Vector3 targetScale = new Vector3(this.GetRadius() * 2f, this.GetRadius() * 2f, this.GetRadius() * 2f);
+        //spellEffect.GetComponentInChildren<GenericDmgSpellEffect>().spell = this;
 
 
-        // grow after impact to correct size
+        /*// grow after impact to correct size
         deltaTime = 0f;
         duration = 0.5f;
         while (deltaTime < duration)
@@ -98,7 +112,7 @@ public class SpellFireball : Spell
             deltaTime += Time.deltaTime;
             spellEffect.transform.localScale = Vector3.Lerp(spellEffect.transform.localScale, targetScale, deltaTime / duration);
             yield return null;
-        }
+        }*/
 
         // wait for spell impact to linger
         deltaTime = 0f;
@@ -140,6 +154,8 @@ public class SpellBurst : Spell
         name = "Magic Burst";
         range = 7.5f;
         radius = .5f;
+        manaCost = 1;
+        damage = 10;
     }
 
     public override IEnumerator ExecuteSpell(Vector3 origin, Vector3 targetPos)
@@ -191,6 +207,8 @@ public class SpellOrbShield : Spell
         name = "Orb Shield";
         range = 1f;
         radius = 1f;
+        manaCost = 2;
+        damage = 5;
     }
 
     public override IEnumerator ExecuteSpell(Vector3 origin, Vector3 targetPos)
@@ -199,16 +217,17 @@ public class SpellOrbShield : Spell
 
         int numProjectiles = 3;
         float radiansBetweenProjectiles = (Mathf.PI * 2) / numProjectiles;
+        Vector3 height = new Vector3(0f, projectileHeight, 0f);
 
         // create the projectile3
         GameObject projectile1 = GameObject.Instantiate(GameManager.Instance.spellburstProjectilePrefab);
-        projectile1.transform.position = origin;
+        projectile1.transform.position = origin + height;
 
         GameObject projectile2 = GameObject.Instantiate(GameManager.Instance.spellburstProjectilePrefab);
-        projectile2.transform.position = origin;
+        projectile2.transform.position = origin + height;
 
         GameObject projectile3 = GameObject.Instantiate(GameManager.Instance.spellburstProjectilePrefab);
-        projectile3.transform.position = origin;
+        projectile3.transform.position = origin + height;
 
         // move the projectiles to rotate around player for duration
         float deltaTime = 0f;
@@ -218,24 +237,24 @@ public class SpellOrbShield : Spell
             deltaTime += Time.deltaTime;
             float xMovement1 = Mathf.Sin((deltaTime / duration) * Mathf.PI) * radius;
             float zMovement1 = Mathf.Cos((deltaTime / duration) * Mathf.PI) * radius;
-            projectile1.transform.position = new Vector3(xMovement1, origin.y - 1f, zMovement1) + origin;
+            projectile1.transform.position = new Vector3(xMovement1, origin.y - 1f, zMovement1) + origin + height;
 
             deltaTime += Time.deltaTime;
             float xMovement2 = Mathf.Sin((deltaTime / duration) * Mathf.PI + radiansBetweenProjectiles) * radius;
             float zMovement2 = Mathf.Cos((deltaTime / duration) * Mathf.PI + radiansBetweenProjectiles) * radius;
-            projectile2.transform.position = new Vector3(xMovement2, origin.y - 1f, zMovement2) + origin;
+            projectile2.transform.position = new Vector3(xMovement2, origin.y - 1f, zMovement2) + origin + height;
 
             deltaTime += Time.deltaTime;
             float xMovement3 = Mathf.Sin((deltaTime / duration) * Mathf.PI + (radiansBetweenProjectiles * 2f)) * radius;
             float zMovement3 = Mathf.Cos((deltaTime / duration) * Mathf.PI + (radiansBetweenProjectiles * 2f)) * radius;
-            projectile3.transform.position = new Vector3(xMovement3, origin.y - 1f, zMovement3) + origin;
+            projectile3.transform.position = new Vector3(xMovement3, origin.y - 1f, zMovement3) + origin + height;
             yield return null;
         }
 
-        // shrink after a time
+/*        // shrink after a time
         deltaTime = 0f;
         duration = 0.2f;
-        while (deltaTime < spellDuration)
+        while (deltaTime < duration)
         {
             deltaTime += Time.deltaTime;
             projectile1.transform.localScale = Vector3.Lerp(projectile1.transform.localScale, Vector3.zero, deltaTime / duration);
@@ -243,7 +262,7 @@ public class SpellOrbShield : Spell
             projectile3.transform.localScale = Vector3.Lerp(projectile3.transform.localScale, Vector3.zero, deltaTime / duration);
             yield return null;
         }
-
+*/
         // remove the projectiles
         GameObject.Destroy(projectile1);
         GameObject.Destroy(projectile2);
@@ -264,6 +283,8 @@ public class SpellIceShard : Spell
         name = "Ice Shard";
         range = 6f;
         radius = 2f;
+        manaCost = 1;
+        damage = 15;
     }
 
     public override IEnumerator ExecuteSpell(Vector3 origin, Vector3 targetPos)
