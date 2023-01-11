@@ -62,7 +62,7 @@ public abstract class Spell
 
 public class SpellFireball : Spell
 {
-    float projectileSpeed = .5f;
+    float projectileSpeed = 0.5f;
     float projectileHeight = 1f;
     float spellDuration = 2f;
     public SpellFireball()

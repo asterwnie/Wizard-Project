@@ -6,14 +6,12 @@ using TMPro;
 
 public class PlayerData : NetworkBehaviour
 {
-    public NetworkVariable<Vector3> Position = new NetworkVariable<Vector3>();
+    //public NetworkVariable<Vector3> Position = new NetworkVariable<Vector3>();
     public NetworkVariable<int> numClients = new NetworkVariable<int>();
 
     //network action data
     string actionType = "idle";
     public Action action;
-    int numPlayers;
-    //public List<Action> allActions = new List<Action>();   //we will dump every action we hear into this list
 
     //screen pointer
     Camera camera;
@@ -28,6 +26,12 @@ public class PlayerData : NetworkBehaviour
     static public int maxMana = 4;
     public NetworkVariable<int> CurrentHealth;
     int currentMana;
+
+   // public GameObject playerPrefab;
+   // public GameObject player;
+    //static int maxHealth = 100;
+   // int currentHealth;
+    public int actionPoints;
 
     // spellcasting
     [Header("Spellcasting")]
@@ -52,7 +56,7 @@ public class PlayerData : NetworkBehaviour
     public float lineWidth = 0.05f;
 
     void Start() {
-        //grab camera and instantiate screen pointer sphere
+        //grab camera and instantiate screen pointer
         camera = GameObject.Find("Main Camera").GetComponent<Camera>();
         pointer = GameManager.Instance.pointerSelected;
 
@@ -75,6 +79,8 @@ public class PlayerData : NetworkBehaviour
             GameManager.Instance.localPlayer = this;
             SubmitHealthRequestServerRpc(maxHealth);
             currentMana = maxMana;
+            currentHealth = maxHealth;
+            MovePointer();  
         }
     }
 
@@ -154,6 +160,7 @@ public class PlayerData : NetworkBehaviour
         selectedSpell = null;
         pointer.SetActive(false);
         GameManager.Instance.ResetSpellSelectionUI();
+        isAimingSpell = false;
     }
 
     void DetectInput() {
@@ -212,6 +219,7 @@ public class PlayerData : NetworkBehaviour
             {
                 //move
                 actionType = "move";
+                SendActionServerRpc(actionType, pointer.transform.position);
             }
         } 
         else if (Input.GetKeyDown(KeyCode.Alpha1)) {
@@ -238,7 +246,7 @@ public class PlayerData : NetworkBehaviour
     Vector3 MovePointer()
     {
         // if casting a spell, only set active when the pointer is in casting range
-        pointer.SetActive(false);
+        pointer.SetActive(true);
         if (selectedSpell != null)
         {
             if (Vector3.Distance(pointer.transform.position, gameObject.transform.position) <= selectedSpell.GetRange())
