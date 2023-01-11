@@ -6,7 +6,7 @@ using TMPro;
 
 public class PlayerData : NetworkBehaviour
 {
-    //public NetworkVariable<Vector3> Position = new NetworkVariable<Vector3>();
+    public NetworkVariable<Vector3> Position = new NetworkVariable<Vector3>();
     public NetworkVariable<int> numClients = new NetworkVariable<int>();
 
     //network action data
@@ -14,7 +14,7 @@ public class PlayerData : NetworkBehaviour
     public Action action;
 
     //screen pointer
-    Camera camera;
+    Camera mainCamera;
     public GameObject pointer;
     public LayerMask playLayer;
 
@@ -31,7 +31,7 @@ public class PlayerData : NetworkBehaviour
    // public GameObject player;
     //static int maxHealth = 100;
    // int currentHealth;
-    public int actionPoints;
+    //public int actionPoints;
 
     // spellcasting
     [Header("Spellcasting")]
@@ -55,9 +55,11 @@ public class PlayerData : NetworkBehaviour
     public Material rangeIndicatorMaterial;
     public float lineWidth = 0.05f;
 
+    static Vector3 VECTOR3_ZERO = Vector3.zero;
+
     void Start() {
-        //grab camera and instantiate screen pointer
-        camera = GameObject.Find("Main Camera").GetComponent<Camera>();
+        //grab mainCamera and instantiate screen pointer
+        mainCamera = GameObject.Find("Main Camera").GetComponent<Camera>();
         pointer = GameManager.Instance.pointerSelected;
 
         // for radius indicator
@@ -74,13 +76,18 @@ public class PlayerData : NetworkBehaviour
     {
         if (IsOwner)
         {
-            // move player to random location
-            SubmitPositionRequestServerRpc(new Vector3(Random.Range(0f, 9f), 0.5f, Random.Range(0f, 9f)));
+            Debug.Log("Initializing networked player.");
             GameManager.Instance.localPlayer = this;
+
+            // move player to random location
+            //actionType = "move";
+            //SendActionServerRpc(actionType, new Vector3(Random.Range(0f, 9f), 0.5f, Random.Range(0f, 9f)));
+            SubmitPositionRequestServerRpc(new Vector3(Random.Range(0f, 9f), 0.5f, Random.Range(0f, 9f)));
+
             SubmitHealthRequestServerRpc(maxHealth);
             currentMana = maxMana;
-            currentHealth = maxHealth;
-            MovePointer();  
+
+           // MovePointer();  
         }
     }
 
@@ -101,9 +108,6 @@ public class PlayerData : NetworkBehaviour
 
     void Update()
     {
-        //calculate the number of players in the game
-        numPlayers = GameObject.FindGameObjectsWithTag("Player").Length;
-
         if (IsClient && IsOwner)
         {
 
@@ -137,13 +141,13 @@ public class PlayerData : NetworkBehaviour
 
 
     [ServerRpc]
-    void SubmitPositionRequestServerRpc(Vector3 pos, ServerRpcParams rpcParams = default)
+    void SubmitPositionRequestServerRpc(Vector3 pos, ServerRpcParams rpcParams = default) // instant movement
     {
         Position.Value = pos;
     }
 
     [ServerRpc]
-    void SubmitHealthRequestServerRpc(int health, ServerRpcParams rpcParams = default)
+    void SubmitHealthRequestServerRpc(int health, ServerRpcParams rpcParams = default) // change player health to new value
     {
         CurrentHealth.Value = health;
     }
@@ -158,7 +162,8 @@ public class PlayerData : NetworkBehaviour
     {
         spellTarget = Vector3.zero;
         selectedSpell = null;
-        pointer.SetActive(false);
+        if(pointer)
+            pointer.SetActive(false);
         GameManager.Instance.ResetSpellSelectionUI();
         isAimingSpell = false;
     }
@@ -172,17 +177,18 @@ public class PlayerData : NetworkBehaviour
 
         if (Input.GetMouseButtonDown(0)) // if mouse is clicked
         {
-            // check if aiming spell or just moving
-            if (isAimingSpell)
+            if (pointerLoc == VECTOR3_ZERO)
+            {
+                // abort action if the raycast failed
+                ClearSpellSelection();
+                return;
+            }
+            else if (isAimingSpell) // check if aiming spell or just moving
             {
                 spellTarget = pointerLoc;
                 // check if target is in range of the spell
-                if(pointerLoc == Vector3.zero)
-                {
-                    // if the pointer is not in range, hide the pointer and deselect spell
-                    ClearSpellSelection();
-                }
-                else if (Vector3.Distance(spellTarget, gameObject.transform.position) <= selectedSpell.GetRange())
+                
+                if (Vector3.Distance(spellTarget, gameObject.transform.position) <= selectedSpell.GetRange())
                 {
                     isAimingSpell = false;
 
@@ -217,9 +223,10 @@ public class PlayerData : NetworkBehaviour
             }
             else
             {
+                //Debug.Log("Submitting move request to " + pointerLoc);
                 //move
                 actionType = "move";
-                SendActionServerRpc(actionType, pointer.transform.position);
+                SendActionServerRpc(actionType, pointerLoc);
             }
         } 
         else if (Input.GetKeyDown(KeyCode.Alpha1)) {
@@ -243,7 +250,7 @@ public class PlayerData : NetworkBehaviour
         }
     }
 
-    Vector3 MovePointer()
+    Vector3 MovePointer() // uses a raycast to move pointer. If nothing was hit, this will return VECTOR3_ZERO
     {
         // if casting a spell, only set active when the pointer is in casting range
         pointer.SetActive(true);
@@ -257,7 +264,7 @@ public class PlayerData : NetworkBehaviour
 
         //move pointer indicator to mouse location
         RaycastHit hit;
-        Ray ray = camera.ScreenPointToRay(Input.mousePosition);
+        Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out hit, 100f, playLayer))
         {
             pointer.transform.position = hit.point + new Vector3(0f, 0.25f, 0f);
@@ -269,7 +276,7 @@ public class PlayerData : NetworkBehaviour
             return pointer.transform.position;
         }
 
-        return Vector3.zero;
+        return VECTOR3_ZERO; // if the raycast fails, return a dummy vector3
     }
 
     public void SelectSpell(int number)

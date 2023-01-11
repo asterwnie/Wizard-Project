@@ -77,7 +77,7 @@ public class SpellFireball : Spell
 
     public override IEnumerator ExecuteSpell(Vector3 origin, Vector3 targetPos)
     {
-        Debug.Log("Executing spell animation: " + this.GetName());
+        //Debug.Log("Executing spell animation: " + this.GetName());
 
         // create the projectile
         GameObject projectile = GameObject.Instantiate(GameManager.Instance.fireballProjectilePrefab);
@@ -147,7 +147,7 @@ public class SpellBurst : Spell
 {
     float projectileSpeed = .5f;
     float projectileHeight = 1f;
-    float spellDuration = 1f;
+    //float spellDuration = 1f;
     public SpellBurst()
     {
         spellType = SpellType.SPELL_BURST;
@@ -198,7 +198,7 @@ public class SpellBurst : Spell
 
 public class SpellOrbShield : Spell
 {
-    float projectileSpeed = .5f;
+    //float projectileSpeed = .5f;
     float projectileHeight = 1f;
     float spellDuration = 6f;
     public SpellOrbShield()
@@ -276,7 +276,7 @@ public class SpellOrbShield : Spell
 public class SpellIceShard : Spell
 {
     float projectileSpeed = .7f;
-    float spellDuration = 5f;
+    //float spellDuration = 5f;
     public SpellIceShard()
     {
         spellType = SpellType.ICE_SHARD;

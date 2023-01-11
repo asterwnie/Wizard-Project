@@ -38,7 +38,7 @@ public class SpellHandler : NetworkBehaviour
 
             if (action.type == "spell")
             {
-                // spawns a fireball that *should* be networked in theory
+                // SPELLCASTING
                 Debug.Log("Server: Broadcasting spell to clients.");
                 ExecuteSpell(actingPlayer.transform.position, action); // spawn on server
                 BroadcastSpellClientRpc(actingPlayer.transform.position, action); // broadcast to clients
@@ -46,8 +46,9 @@ public class SpellHandler : NetworkBehaviour
 
             if (action.type == "move" && actingPlayer != null)
             {
+                // PLAYER MOVEMENT
                 Debug.Log("player at " + actingPlayer.transform.position + " wants to move");
-                actingPlayer.transform.position = action.targetPosition;
+                actingPlayer.GetComponent<PlayerData>().Position.Value = action.targetPosition;
                 //hasMoved = true;
             }
 
