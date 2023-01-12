@@ -21,17 +21,12 @@ public class PlayerData : NetworkBehaviour
     //player
     [Header("Player Stats")]
     public GameObject playerModel;
+    public Animator playerAnimator;
     public Image healthBarUI;
     static public int maxHealth = 100;
     static public int maxMana = 4;
     public NetworkVariable<int> CurrentHealth;
     int currentMana;
-
-   // public GameObject playerPrefab;
-   // public GameObject player;
-    //static int maxHealth = 100;
-   // int currentHealth;
-    //public int actionPoints;
 
     // spellcasting
     [Header("Spellcasting")]
@@ -256,6 +251,7 @@ public class PlayerData : NetworkBehaviour
         pointer.SetActive(true);
         if (selectedSpell != null)
         {
+            pointer.SetActive(false);
             if (Vector3.Distance(pointer.transform.position, gameObject.transform.position) <= selectedSpell.GetRange())
             {
                 pointer.SetActive(true);

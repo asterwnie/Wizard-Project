@@ -160,7 +160,7 @@ public class SpellBurst : Spell
 
     public override IEnumerator ExecuteSpell(Vector3 origin, Vector3 targetPos)
     {
-        Debug.Log("Executing spell animation: " + this.GetName());
+        //Debug.Log("Executing spell animation: " + this.GetName());
 
         // create the projectile
         GameObject projectile = GameObject.Instantiate(GameManager.Instance.spellburstProjectilePrefab);
@@ -213,7 +213,7 @@ public class SpellOrbShield : Spell
 
     public override IEnumerator ExecuteSpell(Vector3 origin, Vector3 targetPos)
     {
-        Debug.Log("Executing spell animation: " + this.GetName());
+        //Debug.Log("Executing spell animation: " + this.GetName());
 
         int numProjectiles = 3;
         float radiansBetweenProjectiles = (Mathf.PI * 2) / numProjectiles;
@@ -289,7 +289,7 @@ public class SpellIceShard : Spell
 
     public override IEnumerator ExecuteSpell(Vector3 origin, Vector3 targetPos)
     {
-        Debug.Log("Executing spell animation: " + this.GetName());
+        //Debug.Log("Executing spell animation: " + this.GetName());
 
         // create the projectile
         GameObject projectile = GameObject.Instantiate(GameManager.Instance.iceShardProjectilePrefab);

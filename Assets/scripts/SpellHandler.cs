@@ -27,6 +27,9 @@ public class SpellHandler : NetworkBehaviour
 
     IEnumerator ResolveActions()
     {
+        float deltaTime;
+        float waitTime;
+        
         isResolving = true;
         Debug.Log("Server: Resolving " + actionsQueue.Count + " move(s).");
         foreach (Action action in actionsQueue)   //resolve each action individually
@@ -39,7 +42,7 @@ public class SpellHandler : NetworkBehaviour
             if (action.type == "spell")
             {
                 // SPELLCASTING
-                Debug.Log("Server: Broadcasting spell to clients.");
+                Debug.Log("Server: Executing Player (ID: " + action.ownerId + ") spell: " + action.spellType + " at " + action.targetPosition);
                 ExecuteSpell(actingPlayer.transform.position, action); // spawn on server
                 BroadcastSpellClientRpc(actingPlayer.transform.position, action); // broadcast to clients
             }
@@ -47,14 +50,29 @@ public class SpellHandler : NetworkBehaviour
             if (action.type == "move" && actingPlayer != null)
             {
                 // PLAYER MOVEMENT
-                Debug.Log("player at " + actingPlayer.transform.position + " wants to move");
-                actingPlayer.GetComponent<PlayerData>().Position.Value = action.targetPosition;
-                //hasMoved = true;
+                Debug.Log("Server: Executing Player (ID: " + action.ownerId + ") action: Move to " + action.targetPosition);
+
+                // move the player (waling)
+                PlayerData currPlayer = actingPlayer.GetComponent<PlayerData>();
+                Vector3 startPos = new Vector3(actingPlayer.transform.position.x, actingPlayer.transform.position.y, actingPlayer.transform.position.z);
+                currPlayer.playerModel.transform.LookAt(new Vector3(action.targetPosition.x, actingPlayer.transform.position.y, action.targetPosition.z));
+
+                currPlayer.playerAnimator.SetBool("isWalking", true);
+                deltaTime = 0;
+                waitTime = Vector3.Distance(actingPlayer.transform.position, action.targetPosition) / 4f;
+                while (deltaTime < waitTime)
+                {
+                    deltaTime += Time.deltaTime;
+                    currPlayer.Position.Value = Vector3.Lerp(startPos, action.targetPosition, deltaTime / waitTime);
+                    yield return null;
+                }
+                currPlayer.playerAnimator.SetBool("isWalking", false);
+
             }
 
             // wait a bit before executing next move
-            float deltaTime = 0;
-            float waitTime = 0.5f;
+            deltaTime = 0;
+            waitTime = 0.5f;
             while(deltaTime < waitTime)
             {
                 deltaTime += Time.deltaTime;
