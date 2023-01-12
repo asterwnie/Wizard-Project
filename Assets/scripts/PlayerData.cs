@@ -76,13 +76,13 @@ public class PlayerData : NetworkBehaviour
     {
         if (IsOwner)
         {
-            Debug.Log("Initializing networked player.");
+           // Debug.Log("Initializing networked player.");
             GameManager.Instance.localPlayer = this;
 
             // move player to random location
             //actionType = "move";
             //SendActionServerRpc(actionType, new Vector3(Random.Range(0f, 9f), 0.5f, Random.Range(0f, 9f)));
-            SubmitPositionRequestServerRpc(new Vector3(Random.Range(0f, 9f), 0.5f, Random.Range(0f, 9f)));
+            SubmitPositionRequestServerRpc(new Vector3(Random.Range(0f, 9f), 0.5f, Random.Range(0f, 9f))); // this moves instantly at the start
 
             SubmitHealthRequestServerRpc(maxHealth);
             currentMana = maxMana;
