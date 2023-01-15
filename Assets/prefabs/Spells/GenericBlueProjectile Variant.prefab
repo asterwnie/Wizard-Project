@@ -31,6 +31,10 @@ PrefabInstance:
       propertyPath: m_Parameters.colorGradient.key1.r
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2926930681063165492, guid: 02474c37358e20748a6ffb65a8c3d644, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 8f272d96d11967a42bfd81f48f39f8ac, type: 2}
     - target: {fileID: 2933138533560381252, guid: 02474c37358e20748a6ffb65a8c3d644, type: 3}
       propertyPath: GlobalObjectIdHash
       value: 951099334
