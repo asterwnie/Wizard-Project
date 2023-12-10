@@ -18,10 +18,22 @@ public class GameManager : NetworkBehaviour
     public HelloWorldManager networkManager;
     public PlayerData localPlayer;
 
+    [Header("Spell Buttons")]
+    public TMP_Text spell1Text;
+    public TMP_Text spell2Text;
+    public TMP_Text spell3Text;
+    public TMP_Text spell4Text;
+
+    [Header("Spell UI")]
+    public List<Image> manaUI;
+    public List<Image> spellUI;
+
+    [Header("Spell References")]
     public Material fireballMaterial; // THIS IS SUPER PLACEHOLDER
     public GameObject fireballProjectilePrefab;
+    public GameObject fireballImpactPrefab;
     public GameObject spellburstProjectilePrefab;
-
+    public GameObject iceShardProjectilePrefab;
     public GameObject plannedSkillGraphic;
 
     // turns
@@ -72,6 +84,7 @@ public class GameManager : NetworkBehaviour
                 BroadcastRoundActiveClientRpc(roundActive);
                 SpellHandler.Instance.ResolveTurn();
                 ResetRoundClientRpc();
+                ResetSpellSelectionUI();
             }
         }
 
@@ -85,6 +98,15 @@ public class GameManager : NetworkBehaviour
             roundActive = true;
             BroadcastRoundActiveClientRpc(roundActive);
             roundStartTime = masterClock.Value;
+        }
+    }
+
+    public void ResetSpellSelectionUI()
+    {
+        //reset spell selection UI
+        foreach (Image spell in spellUI)
+        {
+            spell.color = new Color(spell.color.r, spell.color.g, spell.color.b, 1f);
         }
     }
 
@@ -123,6 +145,28 @@ public class GameManager : NetworkBehaviour
         {
             // update timer ui
             timerBar.fillAmount = 1f - ((currentTime - roundStartTime) / roundDuration);
+
+            // update spells to reflect player's spell names
+            spell1Text.text = localPlayer.spell1.GetName();
+            spell2Text.text = localPlayer.spell2.GetName();
+            spell3Text.text = localPlayer.spell3.GetName();
+            spell4Text.text = localPlayer.spell4.GetName();
+
+            // update mana to reflect player mana
+            foreach(Image mana in manaUI) { mana.color = new Color(mana.color.r, mana.color.g, mana.color.b, 0f); } // reset visibility
+            for(int i = 0; i < localPlayer.GetMana(); i++)
+            {
+                manaUI[i].color = new Color(manaUI[i].color.r, manaUI[i].color.g, manaUI[i].color.b, 1f); // show visible
+            }
+            
+            // update mana UI if a spell is selected
+            if(localPlayer.selectedSpell != null)
+            {
+                for(int i = localPlayer.GetMana() - 1; i > localPlayer.GetMana() - localPlayer.selectedSpell.GetManaCost() - 1; i--)
+                {
+                    manaUI[i].color = new Color(manaUI[i].color.r, manaUI[i].color.g, manaUI[i].color.b, Mathf.Sin(Time.time * 5f) / 4f + 0.5f); // show visible
+                }
+            }
         }
 
         if(IsServer)
@@ -138,6 +182,16 @@ public class GameManager : NetworkBehaviour
     public void SelectSpell(int number)
     {
         localPlayer.SelectSpell(number);
+
+        //update spell UI
+        for(int i = 1; i <= spellUI.Count; i++)
+        {
+            if(i == number)
+                spellUI[i - 1].color = new Color(spellUI[i - 1].color.r, spellUI[i - 1].color.g, spellUI[i - 1].color.b, 0.5f);
+            else
+                spellUI[i - 1].color = new Color(spellUI[i - 1].color.r, spellUI[i - 1].color.g, spellUI[i - 1].color.b, 1f);
+        }
+        
     }
 
 }
